@@ -59,10 +59,10 @@ logger.info(
 def get_print_success(start_timestamp, end_timestamp):
     session = DB_SESSION()
     start_timestamp_datetime = datetime.datetime.strptime(
-        start_timestamp, "%Y-%m-%dT%H:%M:%S.00%f%z")
+        start_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
     end_timestamp_datetime = datetime.datetime.strptime(
-        end_timestamp, "%Y-%m-%dT%H:%M:%S.00%f%z")
-
+        end_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
+    print("here")
     results = session.query(PrintSuccess).filter(
         and_(PrintSuccess.date_created >= start_timestamp_datetime,
              PrintSuccess.date_created < end_timestamp_datetime)
@@ -105,9 +105,9 @@ def get_print_success(start_timestamp, end_timestamp):
 def get_failed_print(start_timestamp, end_timestamp):
     session = DB_SESSION()
     start_timestamp_datetime = datetime.datetime.strptime(
-        start_timestamp, "%Y-%m-%dT%H:%M:%S.00%f%z")
+        start_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
     end_timestamp_datetime = datetime.datetime.strptime(
-        end_timestamp, "%Y-%m-%dT%H:%M:%S.00%f%z")
+        end_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
 
     results = session.query(FailedPrint).filter(
         and_(FailedPrint.date_created >= start_timestamp_datetime,
