@@ -123,7 +123,7 @@ def populate_stats():
         logger.info("End of period processing")
     else:
         # otherwise log an error
-        logger.log(f"Error occured when fetching data")
+        logger.warning(f"Error occured when fetching data")
 
     session.close()
 
