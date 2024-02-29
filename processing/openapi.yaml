@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  description: This API provides event stats
+  version: "1.0.0"
+  title: Stats API
+  contact:
+    email: jtam64@my.bcit.ca
+paths:
+  /stats:
+    get:
+      summary: Gets the event stats
+      operationId: app.get_stats
+      description: Gets Print Success and Failed Print processed statistics
+      responses:
+        '200':
+          description: Successfully returned a list of print events
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/PrintEvents'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  schemas:
+    PrintEvents:
+      required:
+        - num_print_success
+        - mm_used
+        - num_failed_print
+        - total_mm_wasted
+      properties:
+        num_print_success:
+          type: integer
+          example: 1000
+        mm_used:
+          type: integer
+          example: 200
+        num_failed_print:
+          type: integer
+          example: 1000
+        total_mm_wasted:
+          type: integer
+          example: 200
+      type: object

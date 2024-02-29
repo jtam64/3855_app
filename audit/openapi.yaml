@@ -1,0 +1,137 @@
+openapi: 3.0.0
+servers: []
+info:
+  version: "1.0.0"
+  title: 3d Printer Filament Tracker
+  description: Audit events
+tags: 
+- name: spools
+  description: Audit events
+paths:
+  /print_success:
+    get:
+      tags:
+        - success
+      summary: Get history of print successes
+      description: Get history of print successes
+      operationId: app.get_print_success
+      parameters:
+        - name: index
+          in: query
+          description: Gets print event at index
+          schema:
+            type: integer
+            example: 100
+      responses:
+        '200':
+          description: Successfully returned a print successes event
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/usedSpool'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /failed_print:  
+    get:
+      tags:
+        - failed
+      summary: Gets the failure from history
+      description: Gets the failure from history
+      operationId: app.get_failed_print
+      parameters:
+        - name: index
+          in: query
+          description: Gets print failure event at index
+          schema:
+            type: integer
+            example: 100
+      responses:
+        '200':
+          description: Successfully returned a failed print event
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/printFailure'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  schemas:
+    usedSpool:
+      required:
+      - spool_id
+      - printer_id
+      - mm_used
+      - colour
+      properties:
+        spool_id:
+          type: string
+          format: uuid
+          example: 8528cb3f-3da8-4764-aca8-8c22a3da12aa
+        printer_id:
+          type: string
+          example: P1S1903
+        mm_used:
+          type: integer
+          example: 50
+        colour:
+          type: string
+          example: red
+      type: object
+    printFailure:
+      required:
+      - spool_id
+      - printer_id
+      - mm_wasted
+      - timestamp
+      properties:
+        spool_id:
+          type: string
+          format: uuid
+          example: 8528cb3f-3da8-4764-aca8-8c22a3da12aa
+        printer_id:
+          type: string
+          example: P1S1903
+        mm_wasted:
+          type: integer
+          example: 9954821
+        timestamp:
+          type: string
+          format: date-time
+          example: '2023-01-08T10:44:23.001Z'
+      type: object
