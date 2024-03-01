@@ -69,7 +69,7 @@ services:
     restart: always
     ports:
       - "8100:8100"
-    network_mode: "hosts"
+    network_mode: "host"
     depends_on:
       - "storage"
 
