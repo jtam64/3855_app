@@ -2,12 +2,14 @@ version: '3.3'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    restart: always
     ports:
       - "2181"
     hostname: zookeeper
 
   kafka:
     image: wurstmeister/kafka
+    restart: always
     command: [start-kafka.sh]
     ports:
       - "9092:9092"
@@ -45,6 +47,40 @@ services:
     # Where our data will be persisted
     volumes:
       - my-db:/var/lib/mysql
+
+  receiver:
+    image: receiver:latest
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "kafka"
+  
+  storage:
+    image: storage:latest
+    restart: always
+    ports:
+      - "8090:8090"
+    depends_on:
+      - "kafka"
+  
+  processing:
+    image: processing:latest
+    restart: always
+    ports:
+      - "8100:8100"
+    network_mode: "hosts"
+    depends_on:
+      - "storage"
+
+  audit_log:
+    image: audit_log:latest
+    restart: always
+    ports:
+      - "8110:8110"
+    depends_on:
+      - "kafka"
+
 # Names our volume
 volumes:
   my-db:
