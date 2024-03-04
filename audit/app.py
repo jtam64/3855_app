@@ -4,7 +4,7 @@ import yaml
 import logging
 import logging.config
 import json
-# from connexion.middleware import MiddlewarePosition
+from connexion import middleware
 # from starlette.middleware.cors import CORSMiddleware
 
 
@@ -74,14 +74,14 @@ def get_failed_print(index):
 
 
 app = connexion.FlaskApp(__name__, specification_dir="")
-# app.add_middleware(
-#     CORSMiddleware,
-#     position=MiddlewarePosition.BEFORE_EXCEPTION,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"]
-# )
+app.add_middleware(
+    middleware.CORSMiddleware,
+    position= middleware.MiddlewarePosition.BEFORE_EXCEPTION,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
