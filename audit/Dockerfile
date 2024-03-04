@@ -10,8 +10,6 @@ WORKDIR /app
 
 RUN pip3 install -r requirements.txt
 
-RUN pip3 install connexionmiddleware
-
 COPY . /app
 
 ENTRYPOINT ["python3"]
