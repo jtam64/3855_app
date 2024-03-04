@@ -10,7 +10,7 @@ WORKDIR /app
 
 RUN pip3 install -r requirements.txt
 
-RUN pip3 install connexion[swagger-ui]
+RUN pip3 install connexion
 
 COPY . /app
 
