@@ -55,7 +55,7 @@ services:
       - my-db:/var/lib/mysql
 
   receiver:
-    build: ./receiver
+    build: ../receiver
     image: receiver:latest
     restart: always
     ports:
@@ -64,7 +64,7 @@ services:
       - "kafka"
   
   storage:
-    build: ./storage
+    build: ../storage
     image: storage:latest
     restart: always
     ports:
@@ -74,7 +74,7 @@ services:
         condition: service_healthy
   
   processing:
-    build: ./processing
+    build: ../processing
     image: processing:latest
     restart: always
     ports:
@@ -84,7 +84,7 @@ services:
       - "storage"
 
   audit_log:
-    build: ./audit_log
+    build: ../audit_log
     image: audit_log:latest
     restart: always
     ports:
@@ -93,7 +93,7 @@ services:
       - "kafka"
 
   dashboard:
-    build: ./dashboard
+    build: ../dashboard
     image: dashboard
     restart: always
     ports:
