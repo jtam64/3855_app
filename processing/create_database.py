@@ -4,7 +4,7 @@ conn = sqlite3.connect('stats.sqlite')
 
 c = conn.cursor()
 c.execute('''
-          CREATE TABLE stats
+          CREATE TABLE IF NOT EXISTS stats
           (id INTEGER PRIMARY KEY ASC, 
            num_print_success INTEGER NOT NULL,
            mm_used INTEGER NOT NULL,

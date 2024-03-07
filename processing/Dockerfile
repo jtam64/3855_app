@@ -14,4 +14,4 @@ COPY . /app
 
 ENTRYPOINT ["python3"]
 
-CMD ["app.py"]
+CMD ["create_database.py", "app.py"]

@@ -26,6 +26,12 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
     - "zookeeper"
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
   db:
     image: mysql:5.7
@@ -62,7 +68,8 @@ services:
     ports:
       - "8090:8090"
     depends_on:
-      - "kafka"
+      kafka:
+        condition: service_healthy
   
   processing:
     image: processing:latest
