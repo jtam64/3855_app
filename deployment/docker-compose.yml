@@ -82,7 +82,7 @@ services:
       - "kafka"
 
   dashboard:
-    build: dashboard:latest
+    build: dashboard
     restart: always
     ports:
     - "8888:80"
