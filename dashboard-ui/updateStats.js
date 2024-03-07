@@ -1,8 +1,9 @@
 /* UPDATE THESE VALUES TO MATCH YOUR SETUP */
 
-const STATS_API_URL = "http://mysql-kafka.westus3.cloudapp.azure.com:8100/"
+const STATS_API_URL = "http://mysql-kafka.westus3.cloudapp.azure.com:8100/stats"
 const EVENTS_URL = {
-    stats: "http://mysql-kafka.westus3.cloudapp.azure.com:8100/stats",
+    print_success: "http://mysql-kafka.westus3.cloudapp.azure.com:8110/print_success",
+    failed_print: "http://mysql-kafka.westus3.cloudapp.azure.com:8110/failed_print",
 }
 
 // This function fetches and updates the general statistics
@@ -40,7 +41,7 @@ const getEvent = (eventType) => {
 // This function updates a single "event box"
 const updateEventHTML = (data, eventType, error = false) => {
     const { index, ...values } = data
-    const elem = document.getElementById(`${eventType}`)
+    const elem = document.getElementById(`event-${eventType}`)
     elem.innerHTML = `<h5>Event ${index}</h5>`
     
     // for error messages
@@ -56,8 +57,25 @@ const updateEventHTML = (data, eventType, error = false) => {
         ([key, value]) => {
             const labelElm = document.createElement("span")
             const valueElm = document.createElement("span")
-            labelElm.innerText = key
-            valueElm.innerText = value
+            if (typeof value === 'object') {
+                valueElm.innerText = Object.entries(value).map(
+                    ([key, value]) => {
+                        const labelElm = document.createElement("span")
+                        const valueElm = document.createElement("span")
+                        labelElm.innerText = key
+                        valueElm.innerText = value
+                        const pElm = document.createElement("p")
+                        pElm.style.display = "flex"
+                        pElm.style.flexDirection = "column"
+                        pElm.appendChild(labelElm)
+                        pElm.appendChild(valueElm)
+                        elem.appendChild(pElm)
+                    }
+                )
+            } else {
+                labelElm.innerText = key
+                valueElm.innerText = value
+            }
             const pElm = document.createElement("p")
             pElm.style.display = "flex"
             pElm.style.flexDirection = "column"
@@ -87,12 +105,14 @@ const updateStatsHTML = (data, error = false) => {
 const setup = () => {
     const interval = setInterval(() => {
         getStats(STATS_API_URL)
-        getEvent("stats")
+        getEvent("print_success")
+        getEvent("failed_print")
     }, 5000); // Update every 5 seconds
 
     // initial call
     getStats(STATS_API_URL)
-    getEvent("stats")
+    getEvent("print_success")
+    getEvent("failed_print")
     // clearInterval(interval);
 }
 
