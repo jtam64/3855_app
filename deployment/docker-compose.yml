@@ -83,6 +83,7 @@ services:
 
   dashboard:
     build: dashboard:latest
+    restart: always
     ports:
     - "8888:80"
     depends_on:
