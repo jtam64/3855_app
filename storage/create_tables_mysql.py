@@ -24,7 +24,7 @@ db_cursor.execute('''
     ''')
 
 db_cursor.execute('''
-    CREATE TABLE failed_print
+    CREATE TABLE IF NOT EXISTS failed_print
     (
         id INT NOT NULL AUTO_INCREMENT,
         spool_id VARCHAR(250) NOT NULL,
