@@ -85,7 +85,7 @@ services:
 
   audit_log:
     build: ../audit
-    image: audit
+    image: audit:latest
     restart: always
     ports:
       - "8110:8110"
@@ -94,7 +94,7 @@ services:
 
   dashboard:
     build: ../dashboard-ui
-    image: dashboard-ui
+    image: dashboard-ui:latest
     restart: always
     ports:
     - "8888:80"
