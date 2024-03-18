@@ -141,7 +141,7 @@ def process_messages():
             logger.info("Attempting to connect to Kafka")
             client = KafkaClient(hosts=hostname)
         except:
-            logger.error(f"Connection failed. Retrying in {app_config["kafka"]["wait"]} seconds")
+            logger.error(f"Connection failed. Retrying in {str(app_config["kafka"]["wait"])} seconds")
             time.sleep(app_config["kafka"]["wait"])
             retries_count += 1
             if retries_count == connect_count:
