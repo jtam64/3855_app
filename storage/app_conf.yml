@@ -11,3 +11,4 @@ events:
   topic: events
 kafka:
   retries: 20
+  wait: 20

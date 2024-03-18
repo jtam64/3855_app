@@ -135,6 +135,7 @@ def process_messages():
     # Connect to kafka
     retries_count = 0
     connect_count = app_config["kafka"]["retries"]
+    wait = app_config["kafka"]["wait"]
 
     while retries_count < connect_count:
         try:
@@ -142,7 +143,7 @@ def process_messages():
             client = KafkaClient(hosts=hostname)
             break
         except:
-            time.sleep(10)
+            time.sleep(wait)
             logger.error(f"Connection failed. Retrying {retries_count}/{connect_count}")
             retries_count += 1
             if retries_count == connect_count:
