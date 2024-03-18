@@ -10,5 +10,4 @@ events:
   port: 9092
   topic: events
 kafka:
-  retries: 10
-  wait: 5
+  retries: 20
