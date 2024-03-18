@@ -62,7 +62,6 @@ def get_print_success(start_timestamp, end_timestamp):
         start_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
     end_timestamp_datetime = datetime.datetime.strptime(
         end_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
-    print("here")
     results = session.query(PrintSuccess).filter(
         and_(PrintSuccess.date_created >= start_timestamp_datetime,
              PrintSuccess.date_created < end_timestamp_datetime)
