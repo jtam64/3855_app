@@ -1,6 +1,6 @@
 import connexion
 from connexion import NoContent
-import requests
+# import requests
 import yaml
 import logging
 import logging.config
@@ -8,6 +8,7 @@ import uuid
 import datetime
 import json
 from pykafka import KafkaClient
+import time
 
 HEADERS = {"Content-type": "application/json"}
 
@@ -19,6 +20,26 @@ with open("log_conf.yml", "r") as f:
     logging.config.dictConfig(log_config)
 
 logger = logging.getLogger('basicLogger')
+
+retries_count = 0
+connect_count = app_config["kafka"]["retries"]
+wait = app_config["kafka"]["wait"]
+
+# connect to kafka
+while retries_count < connect_count:
+    try:
+        logger.info("Attempting to connect to Kafka")
+        CLIENT = KafkaClient(
+            hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
+        logger.info("Connected to client")
+        break
+    except:
+        time.sleep(wait)
+        logger.error(f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+        retries_count += 1
+        if retries_count == connect_count:
+            logger.error("Connection failed after retries. Exiting")
+            exit(1)
 
 
 def print_success(body):
@@ -42,9 +63,7 @@ def print_success(body):
     # return NoContent, response.status_code
 
     # new post service
-    client = KafkaClient(
-        hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
-    topic = client.topics[str.encode(app_config['events']['topic'])]
+    topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
     producer = topic.get_sync_producer()
 
     msg = {
@@ -79,9 +98,7 @@ def failed_print(body):
     # return NoContent, response.status_code
 
     # new post service
-    client = KafkaClient(
-        hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
-    topic = client.topics[str.encode(app_config['events']['topic'])]
+    topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
     producer = topic.get_sync_producer()
 
     msg = {
@@ -95,6 +112,7 @@ def failed_print(body):
     logger.info(
         f"Returned event failed_print response ({trace_id} with status 201")
     return NoContent, 201
+
 
 
 app = connexion.FlaskApp(__name__, specification_dir="")

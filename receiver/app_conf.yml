@@ -7,3 +7,6 @@ events:
   hostname: mysql-kafka.westus3.cloudapp.azure.com
   port: 9092
   topic: events
+kafka:
+  retries: 20
+  wait: 20
