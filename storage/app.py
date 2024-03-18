@@ -140,6 +140,7 @@ def process_messages():
         try:
             logger.info("Attempting to connect to Kafka")
             client = KafkaClient(hosts=hostname)
+            break
         except:
             time.sleep(app_config["kafka"]["wait"])
             retries_count += 1
