@@ -114,7 +114,6 @@ def failed_print(body):
     return NoContent, 201
 
 
-
 app = connexion.FlaskApp(__name__, specification_dir="")
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
