@@ -31,6 +31,8 @@ while retries_count < connect_count:
         logger.info("Attempting to connect to Kafka")
         CLIENT = KafkaClient(
             hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
+        topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
+        producer = topic.get_sync_producer()
         logger.info("Connected to client")
         break
     except:
@@ -63,9 +65,6 @@ def print_success(body):
     # return NoContent, response.status_code
 
     # new post service
-    topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
-    producer = topic.get_sync_producer()
-
     msg = {
         "type": "print_success",
         "datetime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
@@ -98,9 +97,6 @@ def failed_print(body):
     # return NoContent, response.status_code
 
     # new post service
-    topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
-    producer = topic.get_sync_producer()
-
     msg = {
         "type": "failed_print",
         "datetime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
