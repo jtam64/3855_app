@@ -93,8 +93,8 @@ services:
       - "kafka"
 
   dashboard:
-    build: ../dashboard
-    image: dashboard
+    build: ../dashboard-ui
+    image: dashboard-ui
     restart: always
     ports:
     - "8888:80"
