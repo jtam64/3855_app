@@ -13,6 +13,7 @@ from pykafka import KafkaClient
 import json
 from pykafka.common import OffsetType
 from threading import Thread
+import time
 
 
 import logging
@@ -130,7 +131,23 @@ def process_messages():
     # New post requests
     hostname = "%s:%d" % (app_config["events"]["hostname"],
                           app_config["events"]["port"])
-    client = KafkaClient(hosts=hostname)
+
+    # Connect to kafka
+    retries_count = 0
+    connect_count = app_config["kafka"]["retries"]
+
+    while retries_count < connect_count:
+        try:
+            logger.info("Attempting to connect to Kafka")
+            client = KafkaClient(hosts=hostname)
+        except:
+            logger.error(f"Connection failed. Retrying in {app_config["kafka"]["wait"]} seconds")
+            time.sleep(app_config["kafka"]["wait"])
+            retries_count += 1
+            if retries_count == connect_count:
+                logger.error("Connection failed after retries. Exiting")
+                exit(1)
+
     topic = client.topics[str.encode(app_config["events"]["topic"])]
 
     consumer = topic.get_simple_consumer(consumer_group=b'event_group',

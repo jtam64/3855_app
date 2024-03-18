@@ -31,12 +31,12 @@ services:
       - /home/mysqluser/kafka:/kafka/kafka-logs
     depends_on:
     - "zookeeper"
-    healthcheck:
-      test: nc -z localhost 9092 || exit -1
-      start_period: 15s
-      interval: 5s
-      timeout: 10s
-      retries: 10
+    # healthcheck:
+    #   test: nc -z localhost 9092 || exit -1
+    #   start_period: 15s
+    #   interval: 5s
+    #   timeout: 10s
+    #   retries: 10
 
 
   db:
@@ -75,9 +75,9 @@ services:
     restart: always
     ports:
       - "8090:8090"
-    depends_on:
-      kafka:
-        condition: service_healthy
+    # depends_on:
+    #   kafka:
+    #     condition: service_healthy
   
   processing:
     build: ../processing
