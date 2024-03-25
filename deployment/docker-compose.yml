@@ -17,7 +17,7 @@ services:
       - "9092:9092"
     hostname: kafka
     environment:
-      KAFKA_CREATE_TOPICS: "events:1:1" # topic:partition:replicas
+      KAFKA_CREATE_TOPICS: "events:1:1, event_log:1:1" # topic:partition:replicas
       KAFKA_ADVERTISED_HOST_NAME: mysql-kafka.westus3.cloudapp.azure.com # docker-machine ip
       KAFKA_LISTENERS: INSIDE://:29092,OUTSIDE://:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
@@ -64,8 +64,12 @@ services:
     build: ../receiver
     image: receiver:latest
     restart: always
+    environment:
+      - TARGET_ENV=test
     ports:
       - "8080:8080"
+    volumes:
+      - /home/mysqluser/config/receiver:/config
     depends_on:
       - "kafka"
   
@@ -73,8 +77,12 @@ services:
     build: ../storage
     image: storage:latest
     restart: always
+    environment:
+      - TARGET_ENV=test
     ports:
       - "8090:8090"
+    volumes:
+      - /home/mysqluser/config/storage:/config
     # depends_on:
     #   kafka:
     #     condition: service_healthy
@@ -83,9 +91,13 @@ services:
     build: ../processing
     image: processing:latest
     restart: always
+    environment:
+      - TARGET_ENV=test
     ports:
       - "8100:8100"
     network_mode: "host"
+    volumes:
+      - /home/mysqluser/config/processing:/config
     depends_on:
       - "storage"
 
@@ -93,8 +105,12 @@ services:
     build: ../audit
     image: audit:latest
     restart: always
+    environment:
+      - TARGET_ENV=test
     ports:
       - "8110:8110"
+    volumes:
+      - /home/mysqluser/config/audit_log:/config
     depends_on:
       - "kafka"
 
