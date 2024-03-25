@@ -48,7 +48,7 @@ try:
     DB_SESSION = sessionmaker(bind=DB_ENGINE)
 except:
     # if db doesnt exist, make it then connect
-    create_database
+    create_database.main()
     DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
     Base.metadata.bind = DB_ENGINE
     DB_SESSION = sessionmaker(bind=DB_ENGINE)
