@@ -41,7 +41,7 @@ logger = logging.getLogger('basicLogger')
 logger.info("App Conf File: %s" % app_conf_file)
 logger.info("Log Conf File: %s" % log_conf_file)
 
-if not os.exists(app_config["datastore"]["filename"]):
+if not os.path.exists(app_config["datastore"]["filename"]):
     create_database.main()
 
 DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
