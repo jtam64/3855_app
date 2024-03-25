@@ -101,6 +101,7 @@ services:
     volumes:
       - /home/mysqluser/config/processing:/config
       - /home/mysqluser/logs:/logs
+      - processing-db:/data
     depends_on:
       - "storage"
 
@@ -132,3 +133,4 @@ services:
 # Names our volume
 volumes:
   my-db:
+  processing-db:

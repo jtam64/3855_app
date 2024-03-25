@@ -12,6 +12,7 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from stats import Stats
 import os
+import create_database
 
 import logging
 import logging.config
@@ -40,9 +41,18 @@ logger = logging.getLogger('basicLogger')
 logger.info("App Conf File: %s" % app_conf_file)
 logger.info("Log Conf File: %s" % log_conf_file)
 
-DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
-Base.metadata.bind = DB_ENGINE
-DB_SESSION = sessionmaker(bind=DB_ENGINE)
+try:
+    # try to connect to db
+    DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
+    Base.metadata.bind = DB_ENGINE
+    DB_SESSION = sessionmaker(bind=DB_ENGINE)
+except:
+    # if db doesnt exist, make it then connect
+    create_database
+    DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
+    Base.metadata.bind = DB_ENGINE
+    DB_SESSION = sessionmaker(bind=DB_ENGINE)
+
 
 def get_stats():
     logger.info("Request started")
