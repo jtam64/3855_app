@@ -41,13 +41,10 @@ logger = logging.getLogger('basicLogger')
 logger.info("App Conf File: %s" % app_conf_file)
 logger.info("Log Conf File: %s" % log_conf_file)
 
-try:
-    # try to connect to db
-    DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
-except:
-    # if db doesnt exist, make it then connect
+if not os.exists(app_config["datastore"]["filename"]):
     create_database.main()
-    DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
+
+DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
 
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
