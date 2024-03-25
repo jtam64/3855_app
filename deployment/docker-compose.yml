@@ -70,7 +70,7 @@ services:
       - "8080:8080"
     volumes:
       - /home/mysqluser/config/receiver:/config
-      - /home/mysqlser/logs:/logs
+      - /home/mysqluser/logs:/logs
     depends_on:
       - "kafka"
   
@@ -84,7 +84,7 @@ services:
       - "8090:8090"
     volumes:
       - /home/mysqluser/config/storage:/config
-      - /home/mysqlser/logs:/logs
+      - /home/mysqluser/logs:/logs
     # depends_on:
     #   kafka:
     #     condition: service_healthy
@@ -100,7 +100,7 @@ services:
     network_mode: "host"
     volumes:
       - /home/mysqluser/config/processing:/config
-      - /home/mysqlser/logs:/logs
+      - /home/mysqluser/logs:/logs
     depends_on:
       - "storage"
 
@@ -114,7 +114,7 @@ services:
       - "8110:8110"
     volumes:
       - /home/mysqluser/config/audit_log:/config
-      - /home/mysqlser/logs:/logs
+      - /home/mysqluser/logs:/logs
     depends_on:
       - "kafka"
 
