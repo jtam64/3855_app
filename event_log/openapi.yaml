@@ -9,7 +9,7 @@ paths:
     get:
       summary: Gets stats of event log
       description: From db
-      operationId: app.event_stats
+      operationId: app.get_event_stats
       responses:
         '200':
           description: Successfully returned data

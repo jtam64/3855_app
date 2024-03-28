@@ -136,7 +136,7 @@ def populate_stats():
         limit = app_config["event_log"]["limit"]    # if parameter is passed
     except:
         limit = 25                                  # if no parameter is passed, default 25
-    if sum(len(success_body), len(failed_body)) >= limit:
+    if sum([len(success_body), len(failed_body)]) >= limit:
         msg = {
             "message": f"Number of events exceeded limit: {limit}.",
             "code": "0004",
