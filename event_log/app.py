@@ -50,6 +50,10 @@ DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
+def get_event_stats():
+    pass
+
+
 def process_messages():
     hostname = "%s:%d" % (app_config["events"]["hostname"],
                           app_config["events"]["port"])
