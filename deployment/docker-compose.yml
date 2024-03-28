@@ -129,8 +129,28 @@ services:
     - "processing"
     - "audit_log"
 
+  event_log:
+    build: ../event_log
+    image: event_log:latest
+    restart: always
+    environment:
+      - TARGET_ENV=test
+    ports:
+      - "8120:8120"
+    network_mode: "host"
+    volumes:
+      - /home/mysqluser/config/event_log:/config
+      - /home/mysqluser/logs:/logs
+      - event-log-db:/data
+    depends_on:
+      - "receiver"
+      - "storage"
+      - "processing"
+
+
 
 # Names our volume
 volumes:
   my-db:
   processing-db:
+  event-log-db:
