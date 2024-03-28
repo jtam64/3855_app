@@ -14,6 +14,7 @@ from stats import Stats
 import os
 import create_database
 from pykafka import KafkaClient
+import time
 
 import logging
 import logging.config
@@ -50,17 +51,31 @@ DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
-# create producer event for event log service
-CLIENT = KafkaClient(
-    hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
-event_log = CLIENT.topics[str.encode(app_config['event_log']['topic'])]
-EVENT_LOG = event_log.get_sync_producer()
-msg = {
-"message": "Ready to begin processing.",
-"code": "0003",
-}
-msg_str = json.dumps(msg)
-EVENT_LOG.produce(msg_str.encode('utf-8'))
+
+retries_count = 0
+connect_count = app_config["kafka"]["retries"]
+wait = app_config["kafka"]["wait"]
+
+# connect to kafka
+while retries_count < connect_count:
+    try:
+        logger.info("Attempting to connect to Kafka")
+        # create producer event for event log service
+        CLIENT = KafkaClient(
+            hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
+        event_log = CLIENT.topics[str.encode(app_config['event_log']['topic'])]
+        EVENT_LOG = event_log.get_sync_producer()
+        msg = {
+        "message": "Ready to begin processing.",
+        "code": "0003",
+        }
+        msg_str = json.dumps(msg)
+        EVENT_LOG.produce(msg_str.encode('utf-8'))
+        break
+    except:
+        time.sleep(wait)
+        logger.error(f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+        retries_count += 1
 
 
 def get_stats():
