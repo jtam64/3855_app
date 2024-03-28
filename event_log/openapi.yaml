@@ -49,3 +49,4 @@ components:
         "0004":
           type: integer
           example: 40
+      type: object
