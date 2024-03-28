@@ -51,7 +51,7 @@ Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
 def get_event_stats():
-    return {}, 200
+    return {"0001":10, "0002":20, "0003":30, "0004":40}, 200
 
 
 def process_messages():
