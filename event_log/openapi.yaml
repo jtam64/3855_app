@@ -1,0 +1,51 @@
+openapi: 3.0.0
+servers: []
+info:
+  version: "1.0.0"
+  title: 3d Printer Filament Tracker
+  description: Keep track of event log
+paths:
+  /event_stats:
+    get:
+      summary: Gets stats of event log
+      description: From db
+      operationId: app.event_stats
+      responses:
+        '200':
+          description: Successfully returned data
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/eventStats'
+        '404':
+          description: No data in db
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  schemas:
+    eventStats:
+      required:
+        - "0001"
+        - "0002"
+        - "0003"
+        - "0004"
+      properties:
+        "0001":
+          type: integer
+          example: 10
+        "0002":
+          type: integer
+          example: 20
+        "0003":
+          type: integer
+          example: 30
+        "0004":
+          type: integer
+          example: 40

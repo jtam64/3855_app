@@ -47,6 +47,16 @@ while retries_count < connect_count:
         topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
         PRODUCER = topic.get_sync_producer()
         logger.info("Connected to client")
+        
+        # create producer event for event log service
+        event_log = CLIENT.topics[str.encode(app_config['event_log']['topic'])]
+        EVENT_LOG = event_log.get_sync_producer()
+        msg = {
+            "message": "Connected to Kafka and ready to receive messages.",
+            "code": "0001",
+        }
+        msg_str = json.dumps(msg)
+        EVENT_LOG.produce(msg_str.encode('utf-8'))
         break
     except:
         time.sleep(wait)

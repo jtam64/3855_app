@@ -154,6 +154,16 @@ def process_messages():
             logger.info("Attempting to connect to Kafka")
             client = KafkaClient(hosts=hostname)
             logger.info("Connected to Kafka")
+
+            # create producer event for event log service
+            event_log = client.topics[str.encode(app_config['event_log']['topic'])]
+            EVENT_LOG = event_log.get_sync_producer()
+            msg = {
+            "message": "Connected to Kafka and ready to consume messages.",
+            "code": "0002",
+            }
+            msg_str = json.dumps(msg)
+            EVENT_LOG.produce(msg_str.encode('utf-8'))
             break
         except:
             time.sleep(wait)

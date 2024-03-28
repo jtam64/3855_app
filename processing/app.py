@@ -13,6 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from stats import Stats
 import os
 import create_database
+from pykafka import KafkaClient
 
 import logging
 import logging.config
@@ -48,6 +49,19 @@ DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
 
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
+
+# create producer event for event log service
+CLIENT = KafkaClient(
+    hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
+event_log = CLIENT.topics[str.encode(app_config['event_log']['topic'])]
+EVENT_LOG = event_log.get_sync_producer()
+msg = {
+"message": "Ready to begin processing.",
+"code": "0003",
+}
+msg_str = json.dumps(msg)
+EVENT_LOG.produce(msg_str.encode('utf-8'))
+
 
 def get_stats():
     logger.info("Request started")
@@ -116,6 +130,20 @@ def populate_stats():
         total_mm_used += sum(x["mm_used"] for x in success_body)
         num_failed_print += len(failed_body)
         total_mm_wasted += sum(x["mm_wasted"] for x in failed_body)
+    
+    # send message to event log service if number of events exceeds limit
+    try:
+        limit = app_config["event_log"]["limit"]    # if parameter is passed
+    except:
+        limit = 25                                  # if no parameter is passed, default 25
+    if sum(len(success_body), len(failed_body)) >= limit:
+        msg = {
+            "message": f"Number of events exceeded limit: {limit}.",
+            "code": "0004",
+            }
+        msg_str = json.dumps(msg)
+        EVENT_LOG.produce(msg_str.encode('utf-8'))
+        EVENT_LOG.produce(f" Code 0004")
 
         # Log information received
         logger.info(
