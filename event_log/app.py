@@ -64,7 +64,6 @@ def get_event_stats():
         final = {}
 
         for event in data:
-            print(event.code)
             code = vals[event.code]
             try:
                 final[code] += 1
@@ -100,12 +99,12 @@ def process_messages():
                                          auto_offset_reset=OffsetType.LATEST)
 
     for msg in consumer:
-        session = DB_SESSION()
         msg_str = msg.value.decode('utf-8')
         msg = json.loads(msg_str)
         logger.info("Message: %s" % msg)
-
         message, code = msg["message"], msg["code"]
+
+        session = DB_SESSION()
         event_log = Events(
             message,
             code,
@@ -114,6 +113,8 @@ def process_messages():
         session.add(event_log)
         session.commit()
         logger.info("Added to DB")
+
+        consumer.commit_offsets()
 
 app = connexion.FlaskApp(__name__, specification_dir="")
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
