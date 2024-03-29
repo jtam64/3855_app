@@ -19,6 +19,41 @@ import os
 import logging
 import logging.config
 
+def init_stuff():
+    if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
+        print("In Test Environment")
+        app_conf_file = "/config/app_conf.yml"
+        log_conf_file = "/config/log_conf.yml"
+
+    else:
+        print("In Dev Environment")
+        app_conf_file = "app_conf.yml"
+        log_conf_file = "log_conf.yml"
+
+    global app_config
+    with open(app_conf_file, 'r') as f:
+        app_config = yaml.safe_load(f.read())
+
+    with open(log_conf_file, 'r') as f:
+        log_config = yaml.safe_load(f.read())
+        logging.config.dictConfig(log_config)
+
+    global logger
+    logger = logging.getLogger('basicLogger')
+
+    logger.info("App Conf File: %s" % app_conf_file)
+    logger.info("Log Conf File: %s" % log_conf_file)
+
+    DB_ENGINE = create_engine(f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_size=20, pool_recycle=3600, pool_pre_ping=True)
+
+    Base.metadata.bind = DB_ENGINE
+    
+    global DB_SESSION
+    DB_SESSION = sessionmaker(bind=DB_ENGINE)
+
+    logger.info(
+        f"Connecting to DB. Hostname: {app_config['datastore']['hostname']}, Port: {app_config['datastore']['port']}.")
+    
 def get_print_success(start_timestamp, end_timestamp):
     session = DB_SESSION()
     start_timestamp_datetime = datetime.datetime.strptime(
@@ -152,35 +187,7 @@ app = connexion.FlaskApp(__name__, specification_dir="")
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
-    if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
-        print("In Test Environment")
-        app_conf_file = "/config/app_conf.yml"
-        log_conf_file = "/config/log_conf.yml"
-
-    else:
-        print("In Dev Environment")
-        app_conf_file = "app_conf.yml"
-        log_conf_file = "log_conf.yml"
-
-    with open(app_conf_file, 'r') as f:
-        app_config = yaml.safe_load(f.read())
-
-    with open(log_conf_file, 'r') as f:
-        log_config = yaml.safe_load(f.read())
-        logging.config.dictConfig(log_config)
-
-    logger = logging.getLogger('basicLogger')
-
-    logger.info("App Conf File: %s" % app_conf_file)
-    logger.info("Log Conf File: %s" % log_conf_file)
-
-    DB_ENGINE = create_engine(f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_size=20, pool_recycle=3600, pool_pre_ping=True)
-
-    Base.metadata.bind = DB_ENGINE
-    DB_SESSION = sessionmaker(bind=DB_ENGINE)
-
-    logger.info(
-        f"Connecting to DB. Hostname: {app_config['datastore']['hostname']}, Port: {app_config['datastore']['port']}.")
+    init_stuff()
     t1 = Thread(target=process_messages)
     t1.setDaemon(True)
     t1.start()
