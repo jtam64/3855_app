@@ -7,7 +7,7 @@ class Events(Base):
 
     id = Column(Integer, primary_key=True)
     message = Column(String(100), nullable=False)
-    code = Column(Integer, nullable=False)
+    code = Column(String(100), nullable=False)
     datetime = Column(DateTime, nullable=False)
 
     def __init__(self, message, code, datetime):

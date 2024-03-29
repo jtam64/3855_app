@@ -21,7 +21,7 @@ def main():
                 (
                   id INTEGER PRIMARY KEY ASC,
                   message VARCHAR(100) NOT NULL,
-                  code INTEGER NOT NULL,
+                  code VARCHAR(100) NOT NULL,
                   datetime VARCHAR(100) NOT NULL
                   )
                 ''')
