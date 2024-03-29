@@ -47,7 +47,7 @@ def init_stuff():
     DB_ENGINE = create_engine(f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_size=20, pool_recycle=3600, pool_pre_ping=True)
 
     Base.metadata.bind = DB_ENGINE
-    
+
     global DB_SESSION
     DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
@@ -187,8 +187,8 @@ app = connexion.FlaskApp(__name__, specification_dir="")
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
-    init_stuff()
     t1 = Thread(target=process_messages)
     t1.setDaemon(True)
     t1.start()
+    init_stuff()
     app.run(port=8090)

@@ -208,6 +208,6 @@ CORS(app.app, resources={r"/*": {"origins": "*"}})
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
-    init_stuff()
     init_scheduler()
+    init_stuff()
     app.run(port=8100)
