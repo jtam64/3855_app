@@ -11,32 +11,27 @@ from pykafka import KafkaClient
 import time
 import os
 
-DB_SESSION = None
-app_config = None
-logger = None
-HEADERS = None
+HEADERS = {"Content-type": "application/json"}
+
+if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
+    print("In Test Environment")
+    app_conf_file = "/config/app_conf.yml"
+    log_conf_file = "/config/log_conf.yml"
+else:
+    print("In Dev Environment")
+    app_conf_file = "app_conf.yml"
+    log_conf_file = "log_conf.yml"
+
+with open(app_conf_file, 'r') as f:
+    app_config = yaml.safe_load(f.read())
+
+with open(log_conf_file, 'r') as f:
+    log_config = yaml.safe_load(f.read())
+    logging.config.dictConfig(log_config)
+
+logger = logging.getLogger('basicLogger')
 
 def init_stuff():
-    global DB_SESSION, app_config, logger, HEADERS
-    HEADERS = {"Content-type": "application/json"}
-
-    if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
-        print("In Test Environment")
-        app_conf_file = "/config/app_conf.yml"
-        log_conf_file = "/config/log_conf.yml"
-    else:
-        print("In Dev Environment")
-        app_conf_file = "app_conf.yml"
-        log_conf_file = "log_conf.yml"
-
-    with open(app_conf_file, 'r') as f:
-        app_config = yaml.safe_load(f.read())
-
-    with open(log_conf_file, 'r') as f:
-        log_config = yaml.safe_load(f.read())
-        logging.config.dictConfig(log_config)
-
-    logger = logging.getLogger('basicLogger')
 
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
@@ -58,6 +53,7 @@ def init_stuff():
             
             # create producer event for event log service
             event_log = CLIENT.topics[str.encode(app_config['event_log']['topic'])]
+            global EVENT_LOG
             EVENT_LOG = event_log.get_sync_producer()
             msg = {
                 "message": "Connected to Kafka and ready to receive messages.",

@@ -18,42 +18,36 @@ import logging
 import logging.config
 from flask_cors import CORS
 
-DB_SESSION = None
-app_config = None
-logger = None
+if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
+    print("In Test Environment")
+    app_conf_file = "/config/app_conf.yml"
+    log_conf_file = "/config/log_conf.yml"
+
+else:
+    print("In Dev Environment")
+    app_conf_file = "app_conf.yml"
+    log_conf_file = "log_conf.yml"
+
+with open(app_conf_file, 'r') as f:
+    app_config = yaml.safe_load(f.read())
+
+with open(log_conf_file, 'r') as f:
+    log_config = yaml.safe_load(f.read())
+    logging.config.dictConfig(log_config)
+
+logger = logging.getLogger('basicLogger')
+
+if not os.path.exists(app_config["datastore"]["filename"]):
+    create_database.main()
+
+DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
+
+Base.metadata.bind = DB_ENGINE
+DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
 def init_stuff():
-    global DB_SESSION, app_config, logger
-
-    if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
-        print("In Test Environment")
-        app_conf_file = "/config/app_conf.yml"
-        log_conf_file = "/config/log_conf.yml"
-
-    else:
-        print("In Dev Environment")
-        app_conf_file = "app_conf.yml"
-        log_conf_file = "log_conf.yml"
-
-    with open(app_conf_file, 'r') as f:
-        app_config = yaml.safe_load(f.read())
-
-    with open(log_conf_file, 'r') as f:
-        log_config = yaml.safe_load(f.read())
-        logging.config.dictConfig(log_config)
-
-    logger = logging.getLogger('basicLogger')
-
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
-
-    if not os.path.exists(app_config["datastore"]["filename"]):
-        create_database.main()
-
-    DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
-
-    Base.metadata.bind = DB_ENGINE
-    DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
 def get_event_stats():
     logger.info("Request started")
