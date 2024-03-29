@@ -64,12 +64,13 @@ def get_event_stats():
         final = {}
 
         for event in data:
-            code = vals[event.code]
-            try:
-                final[code] += 1
-            except:
-                final[code] = 0
-    return final, 200
+            print(event.code)
+    #         code = vals[event.code]
+    #         try:
+    #             final[code] += 1
+    #         except:
+    #             final[code] = 0
+    # return final, 200
 
 
 def process_messages():
