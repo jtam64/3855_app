@@ -1,0 +1,7 @@
+version: 1
+events:
+  hostname: mysql-kafka.westus3.cloudapp.azure.com
+  port: 9092
+  topic: events
+event_log:
+  topic: event_log

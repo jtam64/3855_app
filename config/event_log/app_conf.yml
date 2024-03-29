@@ -1,0 +1,10 @@
+version: 1
+datastore:
+  filename: /data/events.sqlite
+events:
+  hostname: mysql-kafka.westus3.cloudapp.azure.com
+  port: 9092
+  topic: event_log
+kafka:
+  retries: 20
+  wait: 20
