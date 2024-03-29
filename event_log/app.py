@@ -51,7 +51,17 @@ Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
 def get_event_stats():
-    return {"0001":10, "0002":20, "0003":30, "0004":40}, 200
+    logger.info("Request started")
+    session = DB_SESSION()
+
+    if session.query(Events).count() < 1:
+        return "Statistics do not exist", 404
+    else:
+        data = session.query(Events)
+        for event in data:
+            print(event)
+    
+    return 200
 
 
 def process_messages():
