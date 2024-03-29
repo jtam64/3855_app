@@ -17,7 +17,6 @@ import datetime
 import logging
 import logging.config
 
-from flask_cors import CORS
 
 
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
@@ -104,9 +103,9 @@ def process_messages():
         )
         session.add(event_log)
         session.commit()
+        logger.info("Added to DB")
 
 app = connexion.FlaskApp(__name__, specification_dir="")
-CORS(app.app, resources={r"/*": {"origins": "*"}})
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":

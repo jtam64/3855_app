@@ -2,7 +2,7 @@ openapi: 3.0.0
 servers: []
 info:
   version: "1.0.0"
-  title: 3d Printer Filament Tracker
+  title: event logs api
   description: Keep track of event log
 paths:
   /event_stats:
