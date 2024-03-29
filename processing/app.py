@@ -159,7 +159,6 @@ def populate_stats():
             }
         msg_str = json.dumps(msg)
         EVENT_LOG.produce(msg_str.encode('utf-8'))
-        EVENT_LOG.produce(f" Code 0004")
 
         # Log information received
         logger.info(

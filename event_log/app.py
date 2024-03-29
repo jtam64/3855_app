@@ -66,7 +66,7 @@ def get_event_stats():
             try:
                 final[code] += 1
             except:
-                final[code] = 0
+                final[code] = 1
     logger.info("Returning values")
     return final, 200
 
