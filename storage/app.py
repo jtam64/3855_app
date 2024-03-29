@@ -19,56 +19,6 @@ import os
 import logging
 import logging.config
 
-if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
-    print("In Test Environment")
-    app_conf_file = "/config/app_conf.yml"
-    log_conf_file = "/config/log_conf.yml"
-
-else:
-    print("In Dev Environment")
-    app_conf_file = "app_conf.yml"
-    log_conf_file = "log_conf.yml"
-
-with open(app_conf_file, 'r') as f:
-    app_config = yaml.safe_load(f.read())
-
-with open(log_conf_file, 'r') as f:
-    log_config = yaml.safe_load(f.read())
-    logging.config.dictConfig(log_config)
-
-logger = logging.getLogger('basicLogger')
-
-logger.info("App Conf File: %s" % app_conf_file)
-logger.info("Log Conf File: %s" % log_conf_file)
-
-DB_ENGINE = create_engine(f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_size=20, pool_recycle=3600, pool_pre_ping=True)
-
-Base.metadata.bind = DB_ENGINE
-DB_SESSION = sessionmaker(bind=DB_ENGINE)
-
-logger.info(
-    f"Connecting to DB. Hostname: {app_config['datastore']['hostname']}, Port: {app_config['datastore']['port']}.")
-
-# Old post requests
-# def print_success(body):
-#     session = DB_SESSION()
-
-#     ps = PrintSuccess(body['spool_id'],
-#                       body['printer_id'],
-#                       body['mm_used'],
-#                       body['colour'],
-#                       body['trace_id'],
-#                       )
-#     session.add(ps)
-
-#     session.commit()
-#     session.close()
-
-#     logger.debug(
-#         f"Stored event print_success request with a trace id of {body['trace_id']}")
-# return NoContent, 201
-
-
 def get_print_success(start_timestamp, end_timestamp):
     session = DB_SESSION()
     start_timestamp_datetime = datetime.datetime.strptime(
@@ -91,28 +41,6 @@ def get_print_success(start_timestamp, end_timestamp):
         f"Query for Print Success after {str(start_timestamp_datetime)} returns {len(results_list)}")
 
     return results_list, 200
-
-# Old post requests
-# def failed_print(body):
-#     session = DB_SESSION()
-
-#     fp = FailedPrint(body['spool_id'],
-#                      body['printer_id'],
-#                      body['mm_wasted'],
-#                      body['timestamp'],
-#                      body['trace_id'],
-#                      )
-
-#     session.add(fp)
-
-#     session.commit()
-#     session.close()
-
-#     logger.debug(
-#         f"Stored event failed_print request with a trace id of {body['trace_id']}")
-
-#     return NoContent, 201
-
 
 def get_failed_print(start_timestamp, end_timestamp):
     session = DB_SESSION()
@@ -224,6 +152,35 @@ app = connexion.FlaskApp(__name__, specification_dir="")
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
+    if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
+        print("In Test Environment")
+        app_conf_file = "/config/app_conf.yml"
+        log_conf_file = "/config/log_conf.yml"
+
+    else:
+        print("In Dev Environment")
+        app_conf_file = "app_conf.yml"
+        log_conf_file = "log_conf.yml"
+
+    with open(app_conf_file, 'r') as f:
+        app_config = yaml.safe_load(f.read())
+
+    with open(log_conf_file, 'r') as f:
+        log_config = yaml.safe_load(f.read())
+        logging.config.dictConfig(log_config)
+
+    logger = logging.getLogger('basicLogger')
+
+    logger.info("App Conf File: %s" % app_conf_file)
+    logger.info("Log Conf File: %s" % log_conf_file)
+
+    DB_ENGINE = create_engine(f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_size=20, pool_recycle=3600, pool_pre_ping=True)
+
+    Base.metadata.bind = DB_ENGINE
+    DB_SESSION = sessionmaker(bind=DB_ENGINE)
+
+    logger.info(
+        f"Connecting to DB. Hostname: {app_config['datastore']['hostname']}, Port: {app_config['datastore']['port']}.")
     t1 = Thread(target=process_messages)
     t1.setDaemon(True)
     t1.start()
