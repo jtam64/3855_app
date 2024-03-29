@@ -16,8 +16,8 @@ import datetime
 
 import logging
 import logging.config
+from flask_cors import CORS
 
-from concurrent.futures import ThreadPoolExecutor
 
 
 
@@ -117,6 +117,7 @@ def process_messages():
         consumer.commit_offsets()
 
 app = connexion.FlaskApp(__name__, specification_dir="")
+CORS(app.app, resources={r"/*": {"origins": "*"}})
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
