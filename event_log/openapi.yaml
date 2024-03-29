@@ -1,5 +1,4 @@
 openapi: 3.0.0
-servers: []
 info:
   version: "1.0.0"
   title: event logs api
@@ -32,21 +31,21 @@ components:
   schemas:
     eventStats:
       required:
-        - "0001"
-        - "0002"
-        - "0003"
-        - "0004"
+        - one
+        - two
+        - three
+        - four
+      type: object
       properties:
-        "0001":
+        one:
           type: integer
           example: 10
-        "0002":
+        two:
           type: integer
           example: 20
-        "0003":
+        three:
           type: integer
           example: 30
-        "0004":
+        four:
           type: integer
           example: 40
-      type: object
