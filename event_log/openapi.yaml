@@ -31,21 +31,21 @@ components:
   schemas:
     eventStats:
       required:
-        - one
-        - two
-        - three
-        - four
+        - "0001"
+        - "0002"
+        - "0003"
+        - "0004"
       type: object
       properties:
-        one:
+        "0001":
           type: integer
           example: 10
-        two:
+        "0002":
           type: integer
           example: 20
-        three:
+        "0003":
           type: integer
           example: 30
-        four:
+        "0004":
           type: integer
           example: 40
