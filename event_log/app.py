@@ -57,10 +57,17 @@ def get_event_stats():
         return "Statistics do not exist", 404
     else:
         data = session.query(Events)
+
+        vals = {"0001":"one", "0002":"two", "0003":"three", "0004":"four"}
+        final = {}
+
         for event in data:
-            print(event)
-    
-    return 200
+            code = vals[event.code]
+            try:
+                final[code] += 1
+            except:
+                final[code] = 0
+    return final, 200
 
 
 def process_messages():
