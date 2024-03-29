@@ -5,6 +5,7 @@ const EVENTS_URL = {
     print_success: "http://mysql-kafka.westus3.cloudapp.azure.com:8110/print_success",
     failed_print: "http://mysql-kafka.westus3.cloudapp.azure.com:8110/failed_print",
 }
+const EVENT_LOG_URL = "http://mysql-kafka.westus3.cloudapp.azure.com:8100/"
 
 // This function fetches and updates the general statistics
 const getStats = (statsUrl) => {
@@ -102,15 +103,44 @@ const updateStatsHTML = (data, error = false) => {
     })
 }
 
+// get event logs
+const getEventLog = (EVENT_LOG_URL) => {
+    fetch(EVENT_LOG_URL)
+        .then(res => res.json())
+        .then((result) => {
+            console.log("Received event logs", result)
+            updateEventLog(result);
+        }).catch((error) => {
+            updateEventLog(error.message, error = true)
+        })
+}
+
+// Update the event logs
+const updateEventLog = (data, error = false) => {
+    const elem = document.getElementById("event_log")
+    if (error === true) {
+        elem.innerHTML = `<code>${data}</code>`
+        return
+    }
+    elem.innerHTML = ""
+    Object.entries(data).map(([key, value]) => {
+        const pElm = document.createElement("p")
+        pElm.innerHTML = `<strong>${key}:</strong> ${value}`
+        elem.appendChild(pElm)
+    })
+}
+
 const setup = () => {
     const interval = setInterval(() => {
         getStats(STATS_API_URL)
+        getEventLog(EVENT_LOG_URL)
         getEvent("print_success")
         getEvent("failed_print")
     }, 5000); // Update every 5 seconds
 
     // initial call
     getStats(STATS_API_URL)
+    getEventLog(EVENT_LOG_URL)
     getEvent("print_success")
     getEvent("failed_print")
     // clearInterval(interval);
