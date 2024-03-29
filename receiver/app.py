@@ -11,8 +11,13 @@ from pykafka import KafkaClient
 import time
 import os
 
+DB_SESSION = None
+app_config = None
+logger = None
+HEADERS = None
+
 def init_stuff():
-    global HEADERS
+    global DB_SESSION, app_config, logger, HEADERS
     HEADERS = {"Content-type": "application/json"}
 
     if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
@@ -24,7 +29,6 @@ def init_stuff():
         app_conf_file = "app_conf.yml"
         log_conf_file = "log_conf.yml"
 
-    global app_config
     with open(app_conf_file, 'r') as f:
         app_config = yaml.safe_load(f.read())
 
@@ -32,7 +36,6 @@ def init_stuff():
         log_config = yaml.safe_load(f.read())
         logging.config.dictConfig(log_config)
 
-    global logger
     logger = logging.getLogger('basicLogger')
 
     logger.info("App Conf File: %s" % app_conf_file)
@@ -80,14 +83,6 @@ def print_success(body):
     logger.info(
         f"Received event print_success request with a trace id of {trace_id}")
 
-    # old post service
-    # response = requests.post(app_config["print_success"]["url"], json=request_body, headers=HEADERS)
-    # return NoContent, response.status_code
-    # logger.info(
-    #     f"Returned event print_success response ({trace_id} with status {response.status_code})")
-
-    # return NoContent, response.status_code
-
     # new post service
     msg = {
         "type": "print_success",
@@ -113,12 +108,6 @@ def failed_print(body):
     }
     logger.info(
         f"Received event failed_print request with a trace id of {trace_id}")
-    # old post service
-    # response = requests.post(
-    #     app_config["failed_print"]["url"], json=request_body, headers=HEADERS)
-    # logger.info(
-    #     f"Returned event failed_print response (id: {trace_id} with status {response.status_code})")
-    # return NoContent, response.status_code
 
     # new post service
     msg = {

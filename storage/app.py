@@ -1,6 +1,5 @@
 from operator import and_
 import connexion
-from connexion import NoContent
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -19,7 +18,12 @@ import os
 import logging
 import logging.config
 
+DB_SESSION = None
+app_config = None
+logger = None
+
 def init_stuff():
+    global DB_SESSION, app_config, logger
     if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
         print("In Test Environment")
         app_conf_file = "/config/app_conf.yml"
@@ -30,7 +34,6 @@ def init_stuff():
         app_conf_file = "app_conf.yml"
         log_conf_file = "log_conf.yml"
 
-    global app_config
     with open(app_conf_file, 'r') as f:
         app_config = yaml.safe_load(f.read())
 
@@ -38,7 +41,6 @@ def init_stuff():
         log_config = yaml.safe_load(f.read())
         logging.config.dictConfig(log_config)
 
-    global logger
     logger = logging.getLogger('basicLogger')
 
     logger.info("App Conf File: %s" % app_conf_file)
@@ -48,7 +50,6 @@ def init_stuff():
 
     Base.metadata.bind = DB_ENGINE
 
-    global DB_SESSION
     DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
     logger.info(
@@ -187,8 +188,8 @@ app = connexion.FlaskApp(__name__, specification_dir="")
 app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
+    init_stuff()
     t1 = Thread(target=process_messages)
     t1.setDaemon(True)
     t1.start()
-    init_stuff()
     app.run(port=8090)
