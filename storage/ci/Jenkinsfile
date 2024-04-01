@@ -1,2 +1,2 @@
 @Library('jack_api_ci@main')_
-python_build('jacklf2/api_storage', 'latest')
+python_build('jacklf2', 'storage')
