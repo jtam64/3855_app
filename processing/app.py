@@ -147,11 +147,11 @@ def populate_stats():
         num_failed_print += len(failed_body)
         total_mm_wasted += sum(x["mm_wasted"] for x in failed_body)
     
-    # send message to event log service if number of events exceeds limit
-    try:
-        limit = app_config["event_log"]["limit"]    # if parameter is passed
-    except:
-        limit = 25                                  # if no parameter is passed, default 25
+        # send message to event log service if number of events exceeds limit
+        try:
+            limit = app_config["event_log"]["limit"]    # if parameter is passed
+        except:
+            limit = 25                                  # if no parameter is passed, default 25
         if sum([len(success_body), len(failed_body)]) >= limit:
             msg = {
                 "message": f"Number of events exceeded limit: {limit}.",
