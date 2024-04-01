@@ -5,3 +5,4 @@ protobuf==3.19.6
 mysql-connector-python==8.0.23
 pymysql==1.0.2
 pykafka==2.4.0
+pyscan-rs
