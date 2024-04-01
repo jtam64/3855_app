@@ -31,13 +31,6 @@ services:
       - /home/mysqluser/kafka:/kafka/kafka-logs
     depends_on:
     - "zookeeper"
-    # healthcheck:
-    #   test: nc -z localhost 9092 || exit -1
-    #   start_period: 15s
-    #   interval: 5s
-    #   timeout: 10s
-    #   retries: 10
-
 
   db:
     image: mysql:5.7

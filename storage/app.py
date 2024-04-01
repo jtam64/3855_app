@@ -18,6 +18,7 @@ import os
 import logging
 import logging.config
 
+# Read the yaml configuration file
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
     app_conf_file = "/config/app_conf.yml"
@@ -44,18 +45,32 @@ Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
 def init_stuff():
+    '''Initializes the application
+    '''
+    # Log the startup parameters
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
 
     logger.info(
         f"Connecting to DB. Hostname: {app_config['datastore']['hostname']}, Port: {app_config['datastore']['port']}.")
     
-def get_print_success(start_timestamp, end_timestamp):
+def get_print_success(start_timestamp:datetime, end_timestamp:datetime) -> list:
+    '''Gets print success events between the start and end timestamps
+
+    Args:
+        start_timestamp (datetime): dateime of the start timestamp
+        end_timestamp (datetime): datetime of the end timestamp
+
+    Returns:
+        list: A list of print success events
+    '''
+    # Create a session
     session = DB_SESSION()
     start_timestamp_datetime = datetime.datetime.strptime(
         start_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
     end_timestamp_datetime = datetime.datetime.strptime(
         end_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
+    # Query the database
     results = session.query(PrintSuccess).filter(
         and_(PrintSuccess.date_created >= start_timestamp_datetime,
              PrintSuccess.date_created < end_timestamp_datetime)
@@ -64,6 +79,7 @@ def get_print_success(start_timestamp, end_timestamp):
     results_list = []
 
     for result in results:
+        # Append the result to the list
         results_list.append(result.to_dict())
 
     session.close()
@@ -73,13 +89,23 @@ def get_print_success(start_timestamp, end_timestamp):
 
     return results_list, 200
 
-def get_failed_print(start_timestamp, end_timestamp):
+def get_failed_print(start_timestamp:datetime, end_timestamp:datetime) -> list:
+    '''Gets failed print events between the start and end timestamps
+
+    Args:
+        start_timestamp (datetime): datetime of the start timestamp
+        end_timestamp (datetime): datetime of the end timestamp
+
+    Returns:
+        list: A list of failed print events
+    '''
     session = DB_SESSION()
     start_timestamp_datetime = datetime.datetime.strptime(
         start_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
     end_timestamp_datetime = datetime.datetime.strptime(
         end_timestamp, "%Y-%m-%dT%H:%M:%S.00%f+00:00")
 
+    # Query the database
     results = session.query(FailedPrint).filter(
         and_(FailedPrint.date_created >= start_timestamp_datetime,
              FailedPrint.date_created < end_timestamp_datetime)
@@ -99,7 +125,8 @@ def get_failed_print(start_timestamp, end_timestamp):
 
 
 def process_messages():
-    # New post requests
+    '''Process incoming messages from Kafka and add to the database
+    '''
     hostname = "%s:%d" % (app_config["events"]["hostname"],
                           app_config["events"]["port"])
 
@@ -122,6 +149,7 @@ def process_messages():
             "code": "0002",
             }
             msg_str = json.dumps(msg)
+            # send message to event log service
             EVENT_LOG.produce(msg_str.encode('utf-8'))
             break
         except:
@@ -129,6 +157,7 @@ def process_messages():
             logger.error(f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
             retries_count += 1
 
+    # information for Kafka
     topic = client.topics[str.encode(app_config["events"]["topic"])]
 
     consumer = topic.get_simple_consumer(consumer_group=b'event_group',
@@ -136,6 +165,7 @@ def process_messages():
                                          auto_offset_reset=OffsetType.LATEST)
 
     for msg in consumer:
+        # Process the messages
         msg_str = msg.value.decode('utf-8')
         msg = json.loads(msg_str)
         logger.info("Message: %s" % msg)
@@ -143,6 +173,7 @@ def process_messages():
         payload = msg["payload"]
 
         if msg["type"] == "print_success":
+            # Store the print success event
             session = DB_SESSION()
 
             ps = PrintSuccess(payload['spool_id'],
@@ -159,6 +190,7 @@ def process_messages():
             logger.debug(
                 f"Stored event print_success request with a trace id of {payload['trace_id']}")
         elif msg["type"] == "failed_print":
+            # Store the failed print event
             session = DB_SESSION()
 
             fp = FailedPrint(payload['spool_id'],

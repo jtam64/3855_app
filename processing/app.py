@@ -21,6 +21,7 @@ import logging.config
 
 from flask_cors import CORS
 
+# Read the yaml configuration file
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
     app_conf_file = "/config/app_conf.yml"
@@ -40,7 +41,9 @@ with open(log_conf_file, 'r') as f:
 
 logger = logging.getLogger('basicLogger')
 
+# Check if the database exists
 if not os.path.exists(app_config["datastore"]["filename"]):
+    # Create the database
     create_database.main()
 
 DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
@@ -65,28 +68,40 @@ while retries_count < connect_count:
         break
     except:
         time.sleep(wait)
-        logger.error(f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+        logger.error(
+            f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
         retries_count += 1
 
+
 def init_stuff():
+    # Log the startup parameters
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
-
+    # Log the connection to Kafka
     msg = {
-    "message": "Ready to begin processing.",
-    "code": "0003",
+        "message": "Ready to begin processing.",
+        "code": "0003",
     }
     msg_str = json.dumps(msg)
+    # send message to event log service
     EVENT_LOG.produce(msg_str.encode('utf-8'))
 
-def get_stats():
+
+def get_stats() -> dict:
+    '''Returns the statistics of all events
+
+    Returns:
+        dict: The statistics of all events
+    '''
     logger.info("Request started")
 
-    session = DB_SESSION()
+    session = DB_SESSION()  # Create a session
 
     if session.query(Stats).count() < 1:
+        # If no data in the database
         return "Statistics do no exist", 404
     else:
+        # Get the data
         existing_data = session.query(Stats).order_by(
             Stats.last_updated.desc())[0]
         information = {
@@ -103,6 +118,8 @@ def get_stats():
 
 
 def populate_stats():
+    '''Periodically update the statistics of events
+    '''
     logger.info("Start Periodic Processing")
 
     session = DB_SESSION()
@@ -146,17 +163,20 @@ def populate_stats():
         total_mm_used += sum(x["mm_used"] for x in success_body)
         num_failed_print += len(failed_body)
         total_mm_wasted += sum(x["mm_wasted"] for x in failed_body)
-    
+
         # send message to event log service if number of events exceeds limit
         try:
-            limit = app_config["event_log"]["limit"]    # if parameter is passed
+            # if parameter is passed
+            limit = app_config["event_log"]["limit"]
         except:
-            limit = 25                                  # if no parameter is passed, default 25
+            # if no parameter is passed, default 25
+            limit = 25 
         if sum([len(success_body), len(failed_body)]) >= limit:
+            # log message to event log service if number of events exceeds limit
             msg = {
                 "message": f"Number of events exceeded limit: {limit}.",
                 "code": "0004",
-                }
+            }
             msg_str = json.dumps(msg)
             EVENT_LOG.produce(msg_str.encode('utf-8'))
 
@@ -181,6 +201,7 @@ def populate_stats():
             [x["trace_id"] for x in failed_body]
 
         for trace in trace_ids:
+            # log trace id
             logger.debug(f"Received event with trace id: {trace}")
         logger.debug(
             f"Update to date number of print success {num_print_success} with {total_mm_used} and number of failed prints {num_failed_print} with {total_mm_wasted}")

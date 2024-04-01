@@ -13,6 +13,7 @@ import os
 
 HEADERS = {"Content-type": "application/json"}
 
+# initial setup of logging configuration and app configuration
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
     app_conf_file = "/config/app_conf.yml"
@@ -47,10 +48,13 @@ while retries_count < connect_count:
         break
     except:
         time.sleep(wait)
-        logger.error(f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+        logger.error(
+            f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
         retries_count += 1
 
+
 def init_stuff():
+    # Log the startup parameters
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
 
@@ -62,10 +66,19 @@ def init_stuff():
         "code": "0001",
     }
     msg_str = json.dumps(msg)
+    # send message to event log
     EVENT_LOG.produce(msg_str.encode('utf-8'))
 
 
-def print_success(body):
+def print_success(body:dict) -> NoContent:
+    '''Receives a print success event
+
+    Args:
+        body (dict): The print success event
+
+    Returns:
+        NoContent: Returns a 201 status code
+    '''
     trace_id = str(uuid.uuid4())
     request_body = {
         "spool_id": body["spool_id"],
@@ -84,6 +97,7 @@ def print_success(body):
         "payload": request_body
     }
     msg_str = json.dumps(msg)
+    # send message to event log
     PRODUCER.produce(msg_str.encode('utf-8'))
 
     logger.info(
@@ -91,7 +105,15 @@ def print_success(body):
     return NoContent, 201
 
 
-def failed_print(body):
+def failed_print(body:dict) -> NoContent:
+    '''Receives a failed print event
+
+    Args:
+        body (dict): The failed print event
+
+    Returns:
+        NoContent: Returns a 201 status code
+    '''
     trace_id = str(uuid.uuid4())
     request_body = {
         "spool_id": body["spool_id"],
@@ -110,6 +132,7 @@ def failed_print(body):
         "payload": request_body
     }
     msg_str = json.dumps(msg)
+    # send message to event log
     PRODUCER.produce(msg_str.encode('utf-8'))
 
     logger.info(

@@ -18,6 +18,7 @@ import logging
 import logging.config
 from flask_cors import CORS
 
+# initial setup of logging configuration and app configuration
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
     app_conf_file = "/config/app_conf.yml"
@@ -37,31 +38,45 @@ with open(log_conf_file, 'r') as f:
 
 logger = logging.getLogger('basicLogger')
 
+# Check if the database exists
 if not os.path.exists(app_config["datastore"]["filename"]):
+    # Create the database
     create_database.main()
 
+# Create the database connection
 DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
 
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
+
 def init_stuff():
+    # Log the startup parameters
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
 
-def get_event_stats():
+
+def get_event_stats() -> dict:
+    '''Returns the statistics of all events
+
+    Returns:
+        dict: The statistics of all events
+    '''
     logger.info("Request started")
     session = DB_SESSION()
 
     if session.query(Events).count() < 1:
+        # No data in the database
         return "Statistics do not exist", 404
     else:
+        # Get the data
         data = session.query(Events)
 
-        vals = {"0001":"one", "0002":"two", "0003":"three", "0004":"four"}
+        vals = {"0001": "one", "0002": "two", "0003": "three", "0004": "four"}
         final = {}
 
         for event in data:
+            # Calculate the statistics
             code = vals[event.code]
             try:
                 final[code] += 1
@@ -72,8 +87,10 @@ def get_event_stats():
 
 
 def process_messages():
+    '''Process incoming messages from Kafka and add to the database
+    '''
     hostname = "%s:%d" % (app_config["events"]["hostname"],
-                          app_config["events"]["port"])
+                          app_config["events"]["port"])  # Connect to kafka
 
     # Connect to kafka
     retries_count = 0
@@ -81,6 +98,7 @@ def process_messages():
     wait = app_config["kafka"]["wait"]
 
     while retries_count < connect_count:
+        # Try to connect to Kafka
         try:
             logger.info("Attempting to connect to Kafka")
             client = KafkaClient(hosts=hostname)
@@ -88,9 +106,11 @@ def process_messages():
             break
         except:
             time.sleep(wait)
-            logger.error(f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+            logger.error(
+                f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
             retries_count += 1
 
+    # information for Kafka
     topic = client.topics[str.encode(app_config["events"]["topic"])]
 
     consumer = topic.get_simple_consumer(consumer_group=b'event_group',
@@ -98,6 +118,7 @@ def process_messages():
                                          auto_offset_reset=OffsetType.LATEST)
 
     for msg in consumer:
+        # Process the messages
         msg_str = msg.value.decode('utf-8')
         msg = json.loads(msg_str)
         logger.info("Message: %s" % msg)
@@ -109,11 +130,14 @@ def process_messages():
             code,
             datetime.datetime.now(),
         )
+        # Add to the database
         session.add(event_log)
         session.commit()
         logger.info("Added to DB")
 
+        # Commit the offset
         consumer.commit_offsets()
+
 
 app = connexion.FlaskApp(__name__, specification_dir="")
 CORS(app.app, resources={r"/*": {"origins": "*"}})
