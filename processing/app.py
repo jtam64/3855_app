@@ -21,64 +21,6 @@ import logging.config
 
 from flask_cors import CORS
 
-app = connexion.FlaskApp(__name__, specification_dir="")
-# CORS(app.app, resources={r"/*": {"origins": "*"}})
-app.add_api("openapi.yaml", base_path="/processing",
-            strict_validation=True, validate_responses=True)
-
-# Read the yaml configuration file
-if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
-    print("In Test Environment")
-    CORS(app.app)
-    app.app.config['CORS_HEADERS'] = 'Content-Type'
-    app_conf_file = "/config/app_conf.yml"
-    log_conf_file = "/config/log_conf.yml"
-
-else:
-    print("In Dev Environment")
-    app_conf_file = "app_conf.yml"
-    log_conf_file = "log_conf.yml"
-
-with open(app_conf_file, 'r') as f:
-    app_config = yaml.safe_load(f.read())
-
-with open(log_conf_file, 'r') as f:
-    log_config = yaml.safe_load(f.read())
-    logging.config.dictConfig(log_config)
-
-logger = logging.getLogger('basicLogger')
-
-# Check if the database exists
-if not os.path.exists(app_config["datastore"]["filename"]):
-    # Create the database
-    create_database.main()
-
-DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
-
-Base.metadata.bind = DB_ENGINE
-DB_SESSION = sessionmaker(bind=DB_ENGINE)
-
-retries_count = 0
-connect_count = app_config["kafka"]["retries"]
-wait = app_config["kafka"]["wait"]
-
-# connect to kafka
-while retries_count < connect_count:
-    try:
-        logger.info("Attempting to connect to Kafka")
-        # create producer event for event log service
-        CLIENT = KafkaClient(
-            hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
-        event_log = CLIENT.topics[str.encode(app_config['event_log']['topic'])]
-        global EVENT_LOG
-        EVENT_LOG = event_log.get_sync_producer()
-        break
-    except:
-        time.sleep(wait)
-        logger.error(
-            f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
-        retries_count += 1
-
 
 def init_stuff():
     # Log the startup parameters
@@ -226,6 +168,65 @@ def init_scheduler():
                   'interval',
                   seconds=app_config['scheduler']['period_sec'])
     sched.start()
+
+
+app = connexion.FlaskApp(__name__, specification_dir="")
+# CORS(app.app, resources={r"/*": {"origins": "*"}})
+app.add_api("openapi.yaml", base_path="/processing",
+            strict_validation=True, validate_responses=True)
+
+# Read the yaml configuration file
+if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
+    print("In Test Environment")
+    CORS(app.app)
+    app.app.config['CORS_HEADERS'] = 'Content-Type'
+    app_conf_file = "/config/app_conf.yml"
+    log_conf_file = "/config/log_conf.yml"
+
+else:
+    print("In Dev Environment")
+    app_conf_file = "app_conf.yml"
+    log_conf_file = "log_conf.yml"
+
+with open(app_conf_file, 'r') as f:
+    app_config = yaml.safe_load(f.read())
+
+with open(log_conf_file, 'r') as f:
+    log_config = yaml.safe_load(f.read())
+    logging.config.dictConfig(log_config)
+
+logger = logging.getLogger('basicLogger')
+
+# Check if the database exists
+if not os.path.exists(app_config["datastore"]["filename"]):
+    # Create the database
+    create_database.main()
+
+DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
+
+Base.metadata.bind = DB_ENGINE
+DB_SESSION = sessionmaker(bind=DB_ENGINE)
+
+retries_count = 0
+connect_count = app_config["kafka"]["retries"]
+wait = app_config["kafka"]["wait"]
+
+# connect to kafka
+while retries_count < connect_count:
+    try:
+        logger.info("Attempting to connect to Kafka")
+        # create producer event for event log service
+        CLIENT = KafkaClient(
+            hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
+        event_log = CLIENT.topics[str.encode(app_config['event_log']['topic'])]
+        global EVENT_LOG
+        EVENT_LOG = event_log.get_sync_producer()
+        break
+    except:
+        time.sleep(wait)
+        logger.error(
+            f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+        retries_count += 1
 
 if __name__ == "__main__":
     init_stuff()

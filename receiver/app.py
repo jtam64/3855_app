@@ -13,49 +13,6 @@ import os
 
 HEADERS = {"Content-type": "application/json"}
 
-app = connexion.FlaskApp(__name__, specification_dir="")
-app.add_api("openapi.yaml", base_path="/receiver",
-            strict_validation=True, validate_responses=True)
-
-# initial setup of logging configuration and app configuration
-if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
-    print("In Test Environment")
-    app_conf_file = "/config/app_conf.yml"
-    log_conf_file = "/config/log_conf.yml"
-else:
-    print("In Dev Environment")
-    app_conf_file = "app_conf.yml"
-    log_conf_file = "log_conf.yml"
-
-with open(app_conf_file, 'r') as f:
-    app_config = yaml.safe_load(f.read())
-
-with open(log_conf_file, 'r') as f:
-    log_config = yaml.safe_load(f.read())
-    logging.config.dictConfig(log_config)
-
-logger = logging.getLogger('basicLogger')
-
-retries_count = 0
-connect_count = app_config["kafka"]["retries"]
-wait = app_config["kafka"]["wait"]
-
-# connect to kafka
-while retries_count < connect_count:
-    try:
-        logger.info("Attempting to connect to Kafka")
-        CLIENT = KafkaClient(
-            hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
-        topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
-        PRODUCER = topic.get_sync_producer()
-        logger.info("Connected to client")
-        break
-    except:
-        time.sleep(wait)
-        logger.error(
-            f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
-        retries_count += 1
-
 
 def init_stuff():
     # Log the startup parameters
@@ -142,6 +99,50 @@ def failed_print(body: dict):
     logger.info(
         f"Returned event failed_print response ({trace_id} with status 201")
     return NoContent, 201
+
+
+app = connexion.FlaskApp(__name__, specification_dir="")
+app.add_api("openapi.yaml", base_path="/receiver",
+            strict_validation=True, validate_responses=True)
+
+# initial setup of logging configuration and app configuration
+if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
+    print("In Test Environment")
+    app_conf_file = "/config/app_conf.yml"
+    log_conf_file = "/config/log_conf.yml"
+else:
+    print("In Dev Environment")
+    app_conf_file = "app_conf.yml"
+    log_conf_file = "log_conf.yml"
+
+with open(app_conf_file, 'r') as f:
+    app_config = yaml.safe_load(f.read())
+
+with open(log_conf_file, 'r') as f:
+    log_config = yaml.safe_load(f.read())
+    logging.config.dictConfig(log_config)
+
+logger = logging.getLogger('basicLogger')
+
+retries_count = 0
+connect_count = app_config["kafka"]["retries"]
+wait = app_config["kafka"]["wait"]
+
+# connect to kafka
+while retries_count < connect_count:
+    try:
+        logger.info("Attempting to connect to Kafka")
+        CLIENT = KafkaClient(
+            hosts=f"{app_config['events']['hostname']}:{app_config['events']['port']}")
+        topic = CLIENT.topics[str.encode(app_config['events']['topic'])]
+        PRODUCER = topic.get_sync_producer()
+        logger.info("Connected to client")
+        break
+    except:
+        time.sleep(wait)
+        logger.error(
+            f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+        retries_count += 1
 
 if __name__ == "__main__":
     init_stuff()
