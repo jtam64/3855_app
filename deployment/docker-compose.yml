@@ -59,7 +59,9 @@ services:
     environment:
       - TARGET_ENV=test
     ports:
-      - "8080:8080"
+      - "8080"
+    networks:
+      - api.network
     volumes:
       - /home/mysqluser/config/receiver:/config
       - /home/mysqluser/logs:/logs
@@ -72,7 +74,9 @@ services:
     environment:
       - TARGET_ENV=test
     ports:
-      - "8090:8090"
+      - "8090"
+    networks:
+      - api.network
     volumes:
       - /home/mysqluser/config/storage:/config
       - /home/mysqluser/logs:/logs
@@ -84,8 +88,9 @@ services:
     environment:
       - TARGET_ENV=test
     ports:
-      - "8100:8100"
-    network_mode: "host"
+      - "8100"
+    networks:
+      - api.network
     volumes:
       - /home/mysqluser/config/processing:/config
       - /home/mysqluser/logs:/logs
@@ -100,7 +105,9 @@ services:
     environment:
       - TARGET_ENV=test
     ports:
-      - "8110:8110"
+      - "8110"
+    networks:
+      - api.network
     volumes:
       - /home/mysqluser/config/audit_log:/config
       - /home/mysqluser/logs:/logs
@@ -112,10 +119,10 @@ services:
     image: dashboard-ui:latest
     restart: always
     ports:
-    - "8888:80"
+      - "3000"
     depends_on:
-    - "processing"
-    - "audit_log"
+      - "processing"
+      - "audit_log"
 
   event_log:
     build: ../event_log
@@ -124,8 +131,9 @@ services:
     environment:
       - TARGET_ENV=test
     ports:
-      - "8120:8120"
-    network_mode: "host"
+      - "8120"
+    networks:
+      - api.network
     volumes:
       - /home/mysqluser/config/event_log:/config
       - /home/mysqluser/logs:/logs
@@ -135,7 +143,27 @@ services:
       - "storage"
       - "processing"
 
+  nginx:
+    image: nginx:latest
+    # Connects the conf file of the container to the conf file in our folder
+    volumes:
+      - /home/mysqluser/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    # It will start up the nginx only when all api containers have started
+    depends_on:
+      - "receiver"
+      - "storage"
+      - "processing"
+      - "audit_log"
+      - "dashboard-ui"
+    # Connects the port 80 of the nginx container to localhost:80 or localhost
+    ports:
+      - "80:80"
+    networks:
+      - "api.network"
 
+
+networks:
+  api.network:
 
 # Names our volume
 volumes:
