@@ -120,6 +120,8 @@ services:
     restart: always
     ports:
       - "3000"
+    networks:
+      - api.network
     depends_on:
       - "processing"
       - "audit_log"
