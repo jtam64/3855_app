@@ -70,7 +70,7 @@ def init_stuff():
     EVENT_LOG.produce(msg_str.encode('utf-8'))
 
 
-def print_success(body:dict) -> NoContent:
+def print_success(body: dict) -> NoContent:
     '''Receives a print success event
 
     Args:
@@ -105,7 +105,7 @@ def print_success(body:dict) -> NoContent:
     return NoContent, 201
 
 
-def failed_print(body:dict) -> NoContent:
+def failed_print(body: dict) -> NoContent:
     '''Receives a failed print event
 
     Args:
@@ -141,7 +141,8 @@ def failed_print(body:dict) -> NoContent:
 
 
 app = connexion.FlaskApp(__name__, specification_dir="")
-app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
+app.add_api("openapi.yaml", base_path="/receiver",
+            strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     init_stuff()

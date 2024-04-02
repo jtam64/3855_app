@@ -24,6 +24,8 @@ from flask_cors import CORS
 # Read the yaml configuration file
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
+    CORS(app.app)
+    app.app.config['CORS_HEADERS'] = 'Content-Type'
     app_conf_file = "/config/app_conf.yml"
     log_conf_file = "/config/log_conf.yml"
 
@@ -170,7 +172,7 @@ def populate_stats():
             limit = app_config["event_log"]["limit"]
         except:
             # if no parameter is passed, default 25
-            limit = 25 
+            limit = 25
         if sum([len(success_body), len(failed_body)]) >= limit:
             # log message to event log service if number of events exceeds limit
             msg = {
@@ -222,8 +224,9 @@ def init_scheduler():
 
 
 app = connexion.FlaskApp(__name__, specification_dir="")
-CORS(app.app, resources={r"/*": {"origins": "*"}})
-app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
+# CORS(app.app, resources={r"/*": {"origins": "*"}})
+app.add_api("openapi.yaml", base_path="/processing",
+            strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     init_stuff()

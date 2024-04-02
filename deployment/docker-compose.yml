@@ -94,8 +94,8 @@ services:
       - "storage"
 
   audit_log:
-    build: ../audit
-    image: audit:latest
+    build: ../audit_log
+    image: audit_log:latest
     restart: always
     environment:
       - TARGET_ENV=test

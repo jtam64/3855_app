@@ -38,11 +38,13 @@ with open(log_conf_file, 'r') as f:
 
 logger = logging.getLogger('basicLogger')
 
-DB_ENGINE = create_engine(f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_size=20, pool_recycle=3600, pool_pre_ping=True)
+DB_ENGINE = create_engine(
+    f"mysql+pymysql://{app_config['datastore']['user']}:{app_config['datastore']['password']}@{app_config['datastore']['hostname']}:{app_config['datastore']['port']}/{app_config['datastore']['db']}", pool_size=20, pool_recycle=3600, pool_pre_ping=True)
 
 Base.metadata.bind = DB_ENGINE
 
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
+
 
 def init_stuff():
     '''Initializes the application
@@ -53,8 +55,9 @@ def init_stuff():
 
     logger.info(
         f"Connecting to DB. Hostname: {app_config['datastore']['hostname']}, Port: {app_config['datastore']['port']}.")
-    
-def get_print_success(start_timestamp:datetime, end_timestamp:datetime) -> list:
+
+
+def get_print_success(start_timestamp: datetime, end_timestamp: datetime) -> list:
     '''Gets print success events between the start and end timestamps
 
     Args:
@@ -89,7 +92,8 @@ def get_print_success(start_timestamp:datetime, end_timestamp:datetime) -> list:
 
     return results_list, 200
 
-def get_failed_print(start_timestamp:datetime, end_timestamp:datetime) -> list:
+
+def get_failed_print(start_timestamp: datetime, end_timestamp: datetime) -> list:
     '''Gets failed print events between the start and end timestamps
 
     Args:
@@ -142,11 +146,12 @@ def process_messages():
             logger.info("Connected to Kafka")
 
             # create producer event for event log service
-            event_log = client.topics[str.encode(app_config['event_log']['topic'])]
+            event_log = client.topics[str.encode(
+                app_config['event_log']['topic'])]
             EVENT_LOG = event_log.get_sync_producer()
             msg = {
-            "message": "Connected to Kafka and ready to consume messages.",
-            "code": "0002",
+                "message": "Connected to Kafka and ready to consume messages.",
+                "code": "0002",
             }
             msg_str = json.dumps(msg)
             # send message to event log service
@@ -154,7 +159,8 @@ def process_messages():
             break
         except:
             time.sleep(wait)
-            logger.error(f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
+            logger.error(
+                f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
             retries_count += 1
 
     # information for Kafka
@@ -212,7 +218,8 @@ def process_messages():
 
 
 app = connexion.FlaskApp(__name__, specification_dir="")
-app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
+app.add_api("openapi.yaml", base_path="/storage",
+            strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     init_stuff()
