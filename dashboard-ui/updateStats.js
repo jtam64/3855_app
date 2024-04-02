@@ -1,9 +1,9 @@
 /* UPDATE THESE VALUES TO MATCH YOUR SETUP */
 
-const STATS_API_URL = "http://mysql-kafka.westus3.cloudapp.azure.com:8100/stats"
+const STATS_API_URL = "http://mysql-kafka.westus3.cloudapp.azure.com/processing/stats"
 const EVENTS_URL = {
-    print_success: "http://mysql-kafka.westus3.cloudapp.azure.com:8110/print_success",
-    failed_print: "http://mysql-kafka.westus3.cloudapp.azure.com:8110/failed_print",
+    print_success: "http://mysql-kafka.westus3.cloudapp.azure.com/audit_log/print_success",
+    failed_print: "http://mysql-kafka.westus3.cloudapp.azure.com/audit_log/failed_print",
 }
 const EVENT_LOG_URL = "http://mysql-kafka.westus3.cloudapp.azure.com:8120/event_stats"
 
