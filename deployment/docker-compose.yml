@@ -116,7 +116,7 @@ services:
 
   dashboard-ui:
     build: ../dashboard-ui
-    image: dashboard-ui:latest
+    image: dashboard-ui
     restart: always
     ports:
       - "3000"
