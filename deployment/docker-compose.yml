@@ -54,8 +54,7 @@ services:
       - my-db:/var/lib/mysql
 
   receiver:
-    build: ../receiver
-    image: receiver:latest
+    image: jacklf2/receiver:latest
     restart: always
     environment:
       - TARGET_ENV=test
@@ -68,8 +67,7 @@ services:
       - "kafka"
   
   storage:
-    build: ../storage
-    image: storage:latest
+    image: jacklf2/receiver:latest
     restart: always
     environment:
       - TARGET_ENV=test
@@ -78,13 +76,10 @@ services:
     volumes:
       - /home/mysqluser/config/storage:/config
       - /home/mysqluser/logs:/logs
-    # depends_on:
-    #   kafka:
-    #     condition: service_healthy
-  
+
+
   processing:
-    build: ../processing
-    image: processing:latest
+    image: jacklf2/receiver:latest
     restart: always
     environment:
       - TARGET_ENV=test
