@@ -131,9 +131,8 @@ services:
     environment:
       - TARGET_ENV=test
     ports:
-      - "8120"
-    networks:
-      - api.network
+      - "8120:8120"
+    network_mode: "host"
     volumes:
       - /home/mysqluser/config/event_log:/config
       - /home/mysqluser/logs:/logs
