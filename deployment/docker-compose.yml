@@ -67,7 +67,7 @@ services:
       - "kafka"
   
   storage:
-    image: jacklf2/receiver:latest
+    image: jacklf2/storage:latest
     restart: always
     environment:
       - TARGET_ENV=test
@@ -79,7 +79,7 @@ services:
 
 
   processing:
-    image: jacklf2/receiver:latest
+    image: jacklf2/processing:latest
     restart: always
     environment:
       - TARGET_ENV=test
