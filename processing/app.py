@@ -21,6 +21,11 @@ import logging.config
 
 from flask_cors import CORS
 
+app = connexion.FlaskApp(__name__, specification_dir="")
+# CORS(app.app, resources={r"/*": {"origins": "*"}})
+app.add_api("openapi.yaml", base_path="/processing",
+            strict_validation=True, validate_responses=True)
+
 # Read the yaml configuration file
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
@@ -221,12 +226,6 @@ def init_scheduler():
                   'interval',
                   seconds=app_config['scheduler']['period_sec'])
     sched.start()
-
-
-app = connexion.FlaskApp(__name__, specification_dir="")
-# CORS(app.app, resources={r"/*": {"origins": "*"}})
-app.add_api("openapi.yaml", base_path="/processing",
-            strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     init_stuff()

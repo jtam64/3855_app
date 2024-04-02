@@ -18,6 +18,10 @@ import logging
 import logging.config
 from flask_cors import CORS
 
+app = connexion.FlaskApp(__name__, specification_dir="")
+# CORS(app.app, resources={r"/*": {"origins": "*"}})
+app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
+
 # initial setup of logging configuration and app configuration
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
@@ -139,11 +143,6 @@ def process_messages():
 
         # Commit the offset
         consumer.commit_offsets()
-
-
-app = connexion.FlaskApp(__name__, specification_dir="")
-# CORS(app.app, resources={r"/*": {"origins": "*"}})
-app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     init_stuff()

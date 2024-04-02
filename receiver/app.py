@@ -13,6 +13,10 @@ import os
 
 HEADERS = {"Content-type": "application/json"}
 
+app = connexion.FlaskApp(__name__, specification_dir="")
+app.add_api("openapi.yaml", base_path="/receiver",
+            strict_validation=True, validate_responses=True)
+
 # initial setup of logging configuration and app configuration
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")
@@ -70,7 +74,7 @@ def init_stuff():
     EVENT_LOG.produce(msg_str.encode('utf-8'))
 
 
-def print_success(body: dict) -> NoContent:
+def print_success(body: dict):
     '''Receives a print success event
 
     Args:
@@ -105,7 +109,7 @@ def print_success(body: dict) -> NoContent:
     return NoContent, 201
 
 
-def failed_print(body: dict) -> NoContent:
+def failed_print(body: dict):
     '''Receives a failed print event
 
     Args:
@@ -138,11 +142,6 @@ def failed_print(body: dict) -> NoContent:
     logger.info(
         f"Returned event failed_print response ({trace_id} with status 201")
     return NoContent, 201
-
-
-app = connexion.FlaskApp(__name__, specification_dir="")
-app.add_api("openapi.yaml", base_path="/receiver",
-            strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     init_stuff()

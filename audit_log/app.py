@@ -7,6 +7,11 @@ import json
 from flask_cors import CORS
 import os
 
+app = connexion.FlaskApp(__name__, specification_dir="")
+# CORS(app.app, resources={r"/*": {"origins": "*"}})
+app.add_api("openapi.yaml", base_path="/audit_log",
+            strict_validation=True, validate_responses=True)
+
 # initial setup of app and log config file
 if "TARGET_ENV" in os.environ and os.environ["TARGET_ENV"] == "test":
     print("In Test Environment")  # if on local
@@ -101,12 +106,6 @@ def get_failed_print(index: int) -> dict:
 
     logger.error("Could not find print success event at index %d" % index)
     return {"message": "Not Found"}, 404
-
-
-app = connexion.FlaskApp(__name__, specification_dir="")
-# CORS(app.app, resources={r"/*": {"origins": "*"}})
-app.add_api("openapi.yaml", base_path="/audit_log",
-            strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     app.run(port=8110)
