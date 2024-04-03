@@ -122,8 +122,6 @@ services:
       - "3000"
     networks:
       - api.network
-    volumes:
-      - ../dashboard-ui/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - "processing"
       - "audit_log"
