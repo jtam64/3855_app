@@ -77,6 +77,7 @@ def populate_stats():
     today = datetime.datetime.now()
     today = datetime.datetime.strftime(today, "%Y-%m-%dT%H:%M:%S.00%f%z")
     today = today + "+00:00"
+    logger.info("here")
 
     if session.query(Stats).count() < 1:
         # If no values exist in db
