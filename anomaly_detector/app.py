@@ -40,7 +40,6 @@ def get_anomalies(anomaly_type: str):
         # Get the data
         existing_data = session.query(Anomaly).filter(Anomaly.anomaly_type == anomaly_type).order_by(
             Anomaly.id.desc())[0]
-        print(existing_data)
         information = {
             "id": existing_data.id,
             "event_id": existing_data.event_id,
@@ -53,7 +52,7 @@ def get_anomalies(anomaly_type: str):
         logger.debug(information)
         logger.info("Request complete")
 
-        # return information, 200
+        return information, 200
 
 
 def process():
