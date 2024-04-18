@@ -38,7 +38,7 @@ def get_anomalies(anomaly_type: str):
         return "Statistics do no exist", 404
     else:
         # Get the data
-        existing_data = session.query(Anomaly).filter(Anomaly.event_type == anomaly_type).order_by(
+        existing_data = session.query(Anomaly).filter(Anomaly.anomaly_type == anomaly_type).order_by(
             Anomaly.id.desc()).first()
         print(existing_data)
         information = {
