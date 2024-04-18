@@ -48,11 +48,10 @@ def get_anomalies(anomaly_type: str):
             "anomaly_type": existing_data.anomaly_type,
             "description": existing_data.description,
         }
-        print(information)
         logger.debug(information)
         logger.info("Request complete")
 
-        return information, 200
+        return [information], 200
 
 
 def process():
