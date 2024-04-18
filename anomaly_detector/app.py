@@ -27,7 +27,8 @@ def init_stuff():
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
 
-def get_anomalies():
+
+def get_anomalies(anomaly_type: str):
     logger.info("Request started")
 
     session = DB_SESSION()  # Create a session
@@ -37,19 +38,20 @@ def get_anomalies():
         return "Statistics do no exist", 404
     else:
         # Get the data
-        existing_data = session.query(Anomaly).order_by(
+        existing_data = session.query(Anomaly).filter(Anomaly.event_type == anomaly_type).order_by(
             Anomaly.last_updated.desc())[0]
         information = {
-            "num_print_success": existing_data.num_print_success,
-            "mm_used": existing_data.mm_used,
-            "num_failed_print": existing_data.num_failed_print,
-            "total_mm_wasted": existing_data.total_mm_wasted,
-            "last_updated": existing_data.last_updated,
+            "event_id": existing_data.event_id,
+            "trace_id": existing_data.trace_id,
+            "event_type": existing_data.event_type,
+            "anomaly_type": existing_data.anomaly_type,
+            "description": existing_data.description,
         }
         logger.debug(information)
         logger.info("Request complete")
 
         return information, 200
+
 
 def process():
     retries_count = 0
@@ -78,8 +80,8 @@ def process():
     topic = CLIENT.topics[str.encode(app_config["events"]["topic"])]
 
     consumer = topic.get_simple_consumer(consumer_group=b'event_group',
-                                        reset_offset_on_start=False,
-                                        auto_offset_reset=OffsetType.LATEST)
+                                         reset_offset_on_start=False,
+                                         auto_offset_reset=OffsetType.LATEST)
 
     for msg in consumer:
         # Process the messages
@@ -92,21 +94,23 @@ def process():
 
         if type == "print_success":
             if payload["mm_used"] <= app_config["anomaly"]["threshold"]:
+                logger.info("Received print_success anomaly")
                 anomaly = Anomaly(
-                    event_id = str(uuid.uuid4()),
-                    trace_id = payload["trace_id"],
-                    event_type = type,
-                    anomaly_type = "high_mm_used",
-                    description = "High mm used",
+                    event_id=str(uuid.uuid4()),
+                    trace_id=payload["trace_id"],
+                    event_type=type,
+                    anomaly_type="TooHigh",
+                    description="High mm used",
                 )
         else:
             if payload["mm_wasted"] <= app_config["anomaly"]["threshold"]:
+                logger.info("Received failed_print anomaly")
                 anomaly = Anomaly(
-                    event_id = str(uuid.uuid4()),
-                    trace_id = payload["trace_id"],
-                    event_type = type,
-                    anomaly_type = "high_mm_wasted",
-                    description = "High mm wasted",
+                    event_id=str(uuid.uuid4()),
+                    trace_id=payload["trace_id"],
+                    event_type=type,
+                    anomaly_type="TooHigh",
+                    description="High mm wasted",
                 )
 
         session.add(anomaly)
@@ -116,6 +120,7 @@ def process():
 
         # Commit the offset
         consumer.commit_offsets()
+
 
 app = connexion.FlaskApp(__name__, specification_dir="")
 CORS(app.app, resources={r"/*": {"origins": "*"}})
@@ -153,7 +158,6 @@ DB_ENGINE = create_engine("sqlite:///%s" % app_config["datastore"]["filename"])
 
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
-
 
 
 if __name__ == "__main__":
