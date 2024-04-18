@@ -144,6 +144,19 @@ services:
       - "storage"
       - "processing"
 
+  anomaly:
+    build: ../anomaly_detector
+    image: anomaly:latest
+    restart: always
+    environment:
+      - TARGET_ENV=test
+    ports:
+      - 8900:8900
+    network_mode: api.network
+    volumes:
+      - /home/mysqluser/config/anomaly:/config
+      - /home/mysqluser/logs:/logs
+
   nginx:
     image: nginx:latest
     restart: always
