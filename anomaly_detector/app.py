@@ -13,6 +13,8 @@ import time
 from threading import Thread
 import json
 import datetime
+import uuid
+
 
 import logging
 import logging.config
@@ -26,7 +28,28 @@ def init_stuff():
     logger.info("Log Conf File: %s" % log_conf_file)
 
 def get_anomalies():
-    pass
+    logger.info("Request started")
+
+    session = DB_SESSION()  # Create a session
+
+    if session.query(Anomaly).count() < 1:
+        # If no data in the database
+        return "Statistics do no exist", 404
+    else:
+        # Get the data
+        existing_data = session.query(Anomaly).order_by(
+            Anomaly.last_updated.desc())[0]
+        information = {
+            "num_print_success": existing_data.num_print_success,
+            "mm_used": existing_data.mm_used,
+            "num_failed_print": existing_data.num_failed_print,
+            "total_mm_wasted": existing_data.total_mm_wasted,
+            "last_updated": existing_data.last_updated,
+        }
+        logger.debug(information)
+        logger.info("Request complete")
+
+        return information, 200
 
 def process():
     retries_count = 0
@@ -43,6 +66,7 @@ def process():
             events = CLIENT.topics[str.encode(app_config['events']['topic'])]
             global EVENTS
             EVENTS = events.get_sync_producer()
+            logger.info("Connected to Kafka")
             break
         except:
             time.sleep(wait)
@@ -64,9 +88,29 @@ def process():
         logger.info("Message: %s" % msg)
         type, datetime, payload = msg["type"], msg["datetime"], msg["payload"]
 
-        print(type, datetime, payload)
-
         session = DB_SESSION()
+
+        if type == "print_success":
+            if payload["mm_used"] <= app_config["anomaly"]["threshold"]:
+                anomaly = Anomaly(
+                    event_id = str(uuid.uuid4()),
+                    trace_id = payload["trace_id"],
+                    event_type = type,
+                    anomaly_type = "high_mm_used",
+                    description = "High mm used",
+                )
+        else:
+            if payload["mm_wasted"] <= app_config["anomaly"]["threshold"]:
+                anomaly = Anomaly(
+                    event_id = str(uuid.uuid4()),
+                    trace_id = payload["trace_id"],
+                    event_type = type,
+                    anomaly_type = "high_mm_wasted",
+                    description = "High mm wasted",
+                )
+
+        session.add(anomaly)
+        session.commit()
 
         logger.info("Added to DB")
 
