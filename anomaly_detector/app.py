@@ -42,6 +42,7 @@ def get_anomalies(anomaly_type: str):
         existing_data = session.query(Anomaly).filter(Anomaly.event_type == anomaly_type).order_by(
             Anomaly.last_updated.desc())[0]
         information = {
+            "id": existing_data.id,
             "event_id": existing_data.event_id,
             "trace_id": existing_data.trace_id,
             "event_type": existing_data.event_type,
@@ -94,9 +95,8 @@ def process():
         session = DB_SESSION()
 
         if type == "print_success":
-            print(payload)
             if payload["mm_used"] >= app_config["anomaly"]["threshold"]:
-                logger.info("Received print_success anomaly")
+                logger.info("Received print_success high anomaly")
                 anomaly = Anomaly(
                     event_id=str(uuid.uuid4()),
                     trace_id=payload["trace_id"],
@@ -104,15 +104,34 @@ def process():
                     anomaly_type="TooHigh",
                     description="High mm used",
                 )
+            else:
+                logger.info("Received print_success low anomaly")
+                anomaly = Anomaly(
+                    event_id=str(uuid.uuid4()),
+                    trace_id=payload["trace_id"],
+                    event_type=type,
+                    anomaly_type="TooLow",
+                    description="Low mm used",
+                )
+
         else:
             if payload["mm_wasted"] >= app_config["anomaly"]["threshold"]:
-                logger.info("Received failed_print anomaly")
+                logger.info("Received failed_print high anomaly")
                 anomaly = Anomaly(
                     event_id=str(uuid.uuid4()),
                     trace_id=payload["trace_id"],
                     event_type=type,
                     anomaly_type="TooHigh",
                     description="High mm wasted",
+                )
+            else:
+                logger.info("Received failed_print low anomaly")
+                anomaly = Anomaly(
+                    event_id=str(uuid.uuid4()),
+                    trace_id=payload["trace_id"],
+                    event_type=type,
+                    anomaly_type="TooLow",
+                    description="Low mm wasted",
                 )
 
         session.add(anomaly)
