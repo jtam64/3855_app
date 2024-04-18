@@ -62,7 +62,7 @@ def process():
             msg = json.loads(msg_str)
             logger.info("Message: %s" % msg)
             type, datetime, payload = msg["type"], msg["datetime"], msg["payload"]
-
+            print(type, datetime, payload)
             session = DB_SESSION()
 
             logger.info("Added to DB")
