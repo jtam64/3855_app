@@ -94,6 +94,7 @@ def process():
         session = DB_SESSION()
 
         if type == "print_success":
+            print(payload)
             if payload["mm_used"] <= app_config["anomaly"]["threshold"]:
                 logger.info("Received print_success anomaly")
                 anomaly = Anomaly(
