@@ -21,6 +21,8 @@ def init_stuff():
     logger.info("App Conf File: %s" % app_conf_file)
     logger.info("Log Conf File: %s" % log_conf_file)
 
+def get_anomalies():
+    pass
 
 app = connexion.FlaskApp(__name__, specification_dir="")
 app.add_api("openapi1.yaml", base_path="/anomaly_detector",
@@ -78,11 +80,6 @@ while retries_count < connect_count:
         logger.error(
             f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
         retries_count += 1
-
-
-def get_anomalies():
-    pass
-
 
 if __name__ == "__main__":
     init_stuff()
