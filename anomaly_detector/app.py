@@ -49,28 +49,29 @@ def process():
             logger.error(
                 f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
             retries_count += 1
-        # information for Kafka
-        topic = CLIENT.topics[str.encode(app_config["events"]["topic"])]
 
-        consumer = topic.get_simple_consumer(consumer_group=b'event_group',
-                                            reset_offset_on_start=False,
-                                            auto_offset_reset=OffsetType.LATEST)
+    # information for Kafka
+    topic = CLIENT.topics[str.encode(app_config["events"]["topic"])]
 
-        for msg in consumer:
-            # Process the messages
-            msg_str = msg.value.decode('utf-8')
-            msg = json.loads(msg_str)
-            logger.info("Message: %s" % msg)
-            type, datetime, payload = msg["type"], msg["datetime"], msg["payload"]
+    consumer = topic.get_simple_consumer(consumer_group=b'event_group',
+                                        reset_offset_on_start=False,
+                                        auto_offset_reset=OffsetType.LATEST)
 
-            print(type, datetime, payload)
-            
-            session = DB_SESSION()
+    for msg in consumer:
+        # Process the messages
+        msg_str = msg.value.decode('utf-8')
+        msg = json.loads(msg_str)
+        logger.info("Message: %s" % msg)
+        type, datetime, payload = msg["type"], msg["datetime"], msg["payload"]
 
-            logger.info("Added to DB")
+        print(type, datetime, payload)
 
-            # Commit the offset
-            consumer.commit_offsets()
+        session = DB_SESSION()
+
+        logger.info("Added to DB")
+
+        # Commit the offset
+        consumer.commit_offsets()
 
 app = connexion.FlaskApp(__name__, specification_dir="")
 CORS(app.app, resources={r"/*": {"origins": "*"}})
