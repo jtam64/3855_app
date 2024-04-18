@@ -53,7 +53,7 @@ def get_anomalies(anomaly_type: str):
         logger.debug(information)
         logger.info("Request complete")
 
-        return information, 200
+        # return information, 200
 
 
 def process():
