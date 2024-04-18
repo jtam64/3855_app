@@ -40,7 +40,7 @@ def get_anomalies(anomaly_type: str):
         # Get the data
         print("here")
         existing_data = session.query(Anomaly).filter(Anomaly.event_type == anomaly_type).order_by(
-            Anomaly.last_updated.desc())[0]
+            Anomaly.id.desc())[0]
         information = {
             "id": existing_data.id,
             "event_id": existing_data.event_id,
