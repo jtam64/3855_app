@@ -39,7 +39,7 @@ def get_anomalies(anomaly_type: str):
     else:
         # Get the data
         existing_data = session.query(Anomaly).filter(Anomaly.anomaly_type == anomaly_type).order_by(
-            Anomaly.id.desc()).first()
+            Anomaly.id.desc())[0]
         print(existing_data)
         information = {
             "id": existing_data.id,
