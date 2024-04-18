@@ -152,7 +152,8 @@ services:
       - TARGET_ENV=test
     ports:
       - 8900:8900
-    network_mode: api.network
+    networks: 
+      - api.network
     volumes:
       - /home/mysqluser/config/anomaly:/config
       - /home/mysqluser/logs:/logs
