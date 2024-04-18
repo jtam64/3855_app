@@ -79,6 +79,11 @@ while retries_count < connect_count:
             f"Connection failed. Retrying after {wait}. Attempts: {retries_count}/{connect_count}")
         retries_count += 1
 
+
+def get_anomalies():
+    pass
+
+
 if __name__ == "__main__":
     init_stuff()
     app.run(port=8900)
