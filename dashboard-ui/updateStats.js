@@ -6,7 +6,7 @@ const EVENTS_URL = {
     failed_print: "http://mysql-kafka.westus3.cloudapp.azure.com/audit_log/failed_print",
 }
 const EVENT_LOG_URL = "http://mysql-kafka.westus3.cloudapp.azure.com:8120/event_stats"
-const ANOMALY = "http://mysql-kafka.westus3.cloudapp.azure.com:8120/anomaly_detector"
+const ANOMALY = "http://mysql-kafka.westus3.cloudapp.azure.com/anomaly_detector"
 
 // This function fetches and updates the general statistics
 const getStats = (statsUrl) => {
