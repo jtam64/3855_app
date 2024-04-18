@@ -157,6 +157,11 @@ services:
     volumes:
       - /home/mysqluser/config/anomaly:/config
       - /home/mysqluser/logs:/logs
+      - anomaly-db:/data
+    depends_on:
+      - "receiver"
+      - "storage"
+      - "processing"
 
   nginx:
     image: nginx:latest
@@ -186,3 +191,4 @@ volumes:
   my-db:
   processing-db:
   event-log-db:
+  anomaly-db:
