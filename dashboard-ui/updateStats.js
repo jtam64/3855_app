@@ -20,14 +20,19 @@ const getStats = (statsUrl) => {
         })
 }
 
-const getAnomaly = (anomalyUrl) => {
-    fetch(anomalyUrl)
-        .then(res => res.json())
+const getAnomaly = (eventType) => {
+    fetch(`${ANOMALY}?anomaly_type=${eventType}`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`Error: status code ${res.status}`)
+            }
+            return res.json()
+        })
         .then((result) => {
-            console.log("Received anomaly", result)
-            updateAnomalyHTML(result);
+            console.log("Received event", result)
+            updateAnomalyHTML({...result, index: eventIndex}, eventType)
         }).catch((error) => {
-            updateAnomalyHTML(error.message, error = true)
+            updateAnomalyHTML({error: error.message, index: eventIndex}, eventType, error = true)
         })
 }
 
@@ -56,6 +61,54 @@ const updateEventHTML = (data, eventType, error = false) => {
     const { index, ...values } = data
     const elem = document.getElementById(`event-${eventType}`)
     elem.innerHTML = `<h5>Event ${index}</h5>`
+    
+    // for error messages
+    if (error === true) {
+        const errorMsg = document.createElement("code")
+        errorMsg.innerHTML = values.error
+        elem.appendChild(errorMsg)
+        return
+    }
+
+    // loops through the object and displays it in the DOM
+    Object.entries(values).map(
+        ([key, value]) => {
+            const labelElm = document.createElement("span")
+            const valueElm = document.createElement("span")
+            if (typeof value === 'object') {
+                valueElm.innerText = Object.entries(value).map(
+                    ([key, value]) => {
+                        const labelElm = document.createElement("span")
+                        const valueElm = document.createElement("span")
+                        labelElm.innerText = key
+                        valueElm.innerText = value
+                        const pElm = document.createElement("p")
+                        pElm.style.display = "flex"
+                        pElm.style.flexDirection = "column"
+                        pElm.appendChild(labelElm)
+                        pElm.appendChild(valueElm)
+                        elem.appendChild(pElm)
+                    }
+                )
+            } else {
+                labelElm.innerText = key
+                valueElm.innerText = value
+            }
+            const pElm = document.createElement("p")
+            pElm.style.display = "flex"
+            pElm.style.flexDirection = "column"
+            pElm.appendChild(labelElm)
+            pElm.appendChild(valueElm)
+            elem.appendChild(pElm)
+        }
+    )
+
+}
+
+const updateAnomalyHTML = (data, eventType, error = false) => {
+    const { index, ...values } = data
+    const elem = document.getElementById(`event-${eventType}`)
+    elem.innerHTML = `<h5>Anomaly ${index}</h5>`
     
     // for error messages
     if (error === true) {
@@ -148,6 +201,8 @@ const setup = () => {
         getEventLog(EVENT_LOG_URL)
         getEvent("print_success")
         getEvent("failed_print")
+        getAnomaly("TooHigh")
+        getAnomaly("TooLow")
     }, 5000); // Update every 5 seconds
 
     // initial call
@@ -155,6 +210,8 @@ const setup = () => {
     getEventLog(EVENT_LOG_URL)
     getEvent("print_success")
     getEvent("failed_print")
+    getAnomaly("TooHigh")
+    getAnomaly("TooLow")
     // clearInterval(interval);
 }
 
