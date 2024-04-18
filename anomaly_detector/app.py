@@ -95,7 +95,7 @@ def process():
 
         if type == "print_success":
             print(payload)
-            if payload["mm_used"] <= app_config["anomaly"]["threshold"]:
+            if payload["mm_used"] >= app_config["anomaly"]["threshold"]:
                 logger.info("Received print_success anomaly")
                 anomaly = Anomaly(
                     event_id=str(uuid.uuid4()),
@@ -105,7 +105,7 @@ def process():
                     description="High mm used",
                 )
         else:
-            if payload["mm_wasted"] <= app_config["anomaly"]["threshold"]:
+            if payload["mm_wasted"] >= app_config["anomaly"]["threshold"]:
                 logger.info("Received failed_print anomaly")
                 anomaly = Anomaly(
                     event_id=str(uuid.uuid4()),
