@@ -108,7 +108,6 @@ const updateEventHTML = (data, eventType, error = false) => {
 const updateAnomalyHTML = (data, eventType, error = false) => {
     const elem = document.getElementById(`event-${eventType}`)
     elem.innerHTML = `<h5>Anomaly ${eventType}</h5>`
-    elem.innerHTML = `<p>${data}</p>`
     // for error messages
     if (error === true) {
         const errorMsg = document.createElement("code")
@@ -116,7 +115,37 @@ const updateAnomalyHTML = (data, eventType, error = false) => {
         elem.appendChild(errorMsg)
         return
     }
-
+    Object.entries(values).map(
+        ([key, value]) => {
+            const labelElm = document.createElement("span")
+            const valueElm = document.createElement("span")
+            if (typeof value === 'object') {
+                valueElm.innerText = Object.entries(value).map(
+                    ([key, value]) => {
+                        const labelElm = document.createElement("span")
+                        const valueElm = document.createElement("span")
+                        labelElm.innerText = key
+                        valueElm.innerText = value
+                        const pElm = document.createElement("p")
+                        pElm.style.display = "flex"
+                        pElm.style.flexDirection = "column"
+                        pElm.appendChild(labelElm)
+                        pElm.appendChild(valueElm)
+                        elem.appendChild(pElm)
+                    }
+                )
+            } else {
+                labelElm.innerText = key
+                valueElm.innerText = value
+            }
+            const pElm = document.createElement("p")
+            pElm.style.display = "flex"
+            pElm.style.flexDirection = "column"
+            pElm.appendChild(labelElm)
+            pElm.appendChild(valueElm)
+            elem.appendChild(pElm)
+        }
+    )
 }
 
 // This function updates the main statistics div
