@@ -30,7 +30,7 @@ const getAnomaly = (eventType) => {
         })
         .then((result) => {
             console.log("Received event", result)
-            updateAnomalyHTML({...result}, eventType)
+            updateAnomalyHTML({result}, eventType)
         }).catch((error) => {
             updateAnomalyHTML({error: error.message}, eventType, error = true)
         })
