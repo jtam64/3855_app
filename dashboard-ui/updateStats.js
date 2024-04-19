@@ -106,6 +106,7 @@ const updateEventHTML = (data, eventType, error = false) => {
 }
 
 const updateAnomalyHTML = (data, eventType, error = false) => {
+    const { index, ...values } = data
     const elem = document.getElementById(`event-${eventType}`)
     elem.innerHTML = `<h5>Anomaly ${eventType}</h5>`
     // for error messages
